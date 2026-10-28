@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils/cn";
 import type {
   Finding,
@@ -27,40 +27,40 @@ type EvidenceFilter = "all" | "actionable" | EvidenceStatus;
 
 /* ---------- Config ---------- */
 
-const CATEGORY_LABELS: Record<FindingCategory, string> = {
-  terminology: "Terminology",
-  claim: "Claims",
-  tone: "Tone",
-  policy: "Policy",
+const CATEGORY_LABELS: Record<FindingCategory, { label: string; icon: string }> = {
+  terminology: { label: "Terminology", icon: "📖" },
+  claim: { label: "Claims", icon: "⚖️" },
+  tone: { label: "Tone & Voice", icon: "🎭" },
+  policy: { label: "Policy", icon: "📜" },
 };
 
 const EVIDENCE_LABELS: Record<EvidenceStatus, string> = {
   rule_match: "Rule Match",
-  conflict: "Conflict",
-  not_verified: "Not Verified",
+  conflict: "Fact Conflict",
+  not_verified: "Unbacked Claim",
   supported: "Verified",
   tone_heuristic: "Tone Heuristic",
 };
 
-const SEVERITY_COLORS: Record<string, string> = {
-  high: "bg-[#f7d4d6] text-[#c50000] dark:bg-[rgba(238,0,0,0.12)] dark:text-[#ff6666]",
-  medium: "bg-[#ffefcf] text-[#ab570a] dark:bg-[rgba(245,166,35,0.12)] dark:text-[#f5a623]",
-  low: "bg-[#d3e5ff] text-[#0761d1] dark:bg-[rgba(0,112,243,0.12)] dark:text-[#3291ff]",
+const SEVERITY_BADGES: Record<string, string> = {
+  high: "bg-rose-100 text-rose-800 border-rose-200",
+  medium: "bg-amber-100 text-amber-800 border-amber-200",
+  low: "bg-blue-100 text-blue-800 border-blue-200",
 };
 
-const EVIDENCE_COLORS: Record<EvidenceStatus, string> = {
-  conflict: "text-[#ee0000] dark:text-[#ff6666]",
-  not_verified: "text-[#ab570a] dark:text-[#f5a623]",
-  rule_match: "text-[#888888] dark:text-[#a1a1a1]",
-  supported: "text-[#0761d1] dark:text-[#3291ff]",
-  tone_heuristic: "text-[#7928ca] dark:text-[#b36aff]",
+const EVIDENCE_COLORS: Record<EvidenceStatus, { text: string; bg: string }> = {
+  conflict: { text: "text-rose-700", bg: "bg-rose-50" },
+  not_verified: { text: "text-amber-700", bg: "bg-amber-50" },
+  rule_match: { text: "text-indigo-700", bg: "bg-indigo-50" },
+  supported: { text: "text-emerald-700", bg: "bg-emerald-50" },
+  tone_heuristic: { text: "text-purple-700", bg: "bg-purple-50" },
 };
 
 const DISMISSAL_REASONS: { value: DismissalReason; label: string }[] = [
-  { value: "contextually_valid", label: "Contextually valid" },
-  { value: "exception_granted", label: "Exception granted" },
-  { value: "false_positive", label: "False positive" },
-  { value: "rule_outdated", label: "Rule is outdated" },
+  { value: "contextually_valid", label: "Contextually valid for audience" },
+  { value: "exception_granted", label: "Brand exception granted" },
+  { value: "false_positive", label: "False positive detection" },
+  { value: "rule_outdated", label: "Rule policy is outdated" },
 ];
 
 /* ---------- Component ---------- */
@@ -78,6 +78,16 @@ export default function FindingsPanel({
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
   const [evidenceFilter, setEvidenceFilter] = useState<EvidenceFilter>("actionable");
   const [dismissingId, setDismissingId] = useState<string | null>(null);
+  const listContainerRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll finding card into view when activeFindingId changes
+  useEffect(() => {
+    if (!activeFindingId || !listContainerRef.current) return;
+    const cardEl = document.getElementById(`finding-card-${activeFindingId}`);
+    if (cardEl) {
+      cardEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [activeFindingId]);
 
   // Filter findings
   const filtered = findings.filter((f) => {
@@ -97,100 +107,110 @@ export default function FindingsPanel({
   ).length;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-slate-50/70 border-l border-slate-200/80">
       {/* Header */}
-      <div className="border-b border-hairline px-5 py-3">
-        <div className="flex items-center justify-between mb-2.5">
-          <h2 className="text-body-sm-strong text-ink">
-            Findings
-          </h2>
-          <div className="flex items-center gap-2 text-caption-mono tabular-nums">
-            <span className="text-[#ee0000] dark:text-[#ff6666] font-medium">
+      <div className="border-b border-slate-200/80 px-4 py-3 bg-white shadow-xs">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-bold text-slate-900">
+              Findings
+            </h2>
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold border border-slate-200">
+              {filtered.length} shown
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs font-mono tabular-nums">
+            <span className="text-rose-600 font-semibold bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
               {actionableCount} open
             </span>
-            <span className="text-hairline-strong">·</span>
-            <span className="text-[#0070f3] dark:text-[#3291ff] font-medium">
+            <span className="text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
               {resolvedCount} resolved
-            </span>
-            <span className="text-hairline-strong">·</span>
-            <span className="text-mute font-medium">
-              {findings.length} total
             </span>
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="flex items-center gap-1 flex-wrap">
-          {/* Category filters */}
-          {(["all", "terminology", "claim", "tone", "policy"] as CategoryFilter[]).map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setCategoryFilter(cat)}
-              className={cn(
-                "px-2 py-[3px] text-caption font-medium rounded-[4px] transition-base",
-                categoryFilter === cat
-                  ? "bg-accent text-on-primary"
-                  : "text-mute hover:text-body hover:bg-canvas-soft-2"
-              )}
-            >
-              {cat === "all" ? "All" : CATEGORY_LABELS[cat]}
-            </button>
-          ))}
+        {/* Category Filters */}
+        <div className="flex items-center gap-1.5 flex-wrap pt-1">
+          {(["all", "terminology", "claim", "tone", "policy"] as CategoryFilter[]).map((cat) => {
+            const isSelected = categoryFilter === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setCategoryFilter(cat)}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-medium rounded-lg transition-all",
+                  isSelected
+                    ? "bg-indigo-600 text-white shadow-xs font-semibold"
+                    : "text-slate-600 bg-slate-100 hover:bg-slate-200/70"
+                )}
+              >
+                {cat === "all" ? "All" : CATEGORY_LABELS[cat].label}
+              </button>
+            );
+          })}
+        </div>
 
-          <span className="text-hairline mx-0.5">|</span>
-
-          {/* Evidence filters */}
-          {(["actionable", "all", "conflict", "not_verified", "rule_match", "supported"] as EvidenceFilter[]).map((ev) => (
-            <button
-              key={ev}
-              onClick={() => setEvidenceFilter(ev)}
-              className={cn(
-                "px-2 py-[3px] text-caption font-medium rounded-[4px] transition-base",
-                evidenceFilter === ev
-                  ? "bg-accent text-on-primary"
-                  : "text-mute hover:text-body hover:bg-canvas-soft-2"
-              )}
-            >
-              {ev === "actionable"
-                ? "Actionable"
-                : ev === "all"
-                ? "All"
-                : EVIDENCE_LABELS[ev as EvidenceStatus]}
-            </button>
-          ))}
+        {/* Evidence Status Filters */}
+        <div className="flex items-center gap-1.5 flex-wrap pt-1.5">
+          {(["actionable", "all", "conflict", "not_verified", "rule_match"] as EvidenceFilter[]).map((ev) => {
+            const isSelected = evidenceFilter === ev;
+            return (
+              <button
+                key={ev}
+                onClick={() => setEvidenceFilter(ev)}
+                className={cn(
+                  "px-2 py-0.5 text-[11px] font-medium rounded-md transition-all",
+                  isSelected
+                    ? "bg-slate-800 text-white font-semibold"
+                    : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
+                )}
+              >
+                {ev === "actionable"
+                  ? "⚡ Actionable"
+                  : ev === "all"
+                  ? "All Statuses"
+                  : EVIDENCE_LABELS[ev as EvidenceStatus]}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Finding list */}
-      <div className="flex-1 overflow-y-auto">
+      <div ref={listContainerRef} className="flex-1 overflow-y-auto p-3 space-y-2.5">
         {filtered.length === 0 ? (
-          <div className="flex items-center justify-center h-40 text-body-sm text-mute">
-            {findings.length === 0
-              ? "Run a governance review to see findings"
-              : "No findings match the current filter"}
+          <div className="flex flex-col items-center justify-center h-48 text-center p-6 bg-white rounded-xl border border-dashed border-slate-300">
+            <span className="text-2xl mb-2">🎯</span>
+            <p className="text-xs font-semibold text-slate-700">
+              {findings.length === 0
+                ? "Click 'Run Governance Review' to scan your draft"
+                : "No findings match the current filter"}
+            </p>
+            <p className="text-[11px] text-slate-400 mt-1 max-w-xs">
+              Every assertion is verified against approved facts and brand guidelines.
+            </p>
           </div>
         ) : (
-          <div className="divide-y divide-hairline">
-            {filtered.map((finding) => (
-              <FindingCard
-                key={finding.id}
-                finding={finding}
-                isActive={finding.id === activeFindingId}
-                isDismissing={finding.id === dismissingId}
-                onSelect={() => onFindingSelect(finding.id)}
-                onAccept={() => onAcceptFix(finding.id)}
-                onStartDismiss={() => setDismissingId(finding.id)}
-                onCancelDismiss={() => setDismissingId(null)}
-                onConfirmDismiss={(reason) => {
-                  onDismiss(finding.id, reason);
-                  setDismissingId(null);
-                }}
-                onUndo={() => onUndoAccept(finding.id)}
-                isLocked={isLocked}
-                role={role}
-              />
-            ))}
-          </div>
+          filtered.map((finding) => (
+            <FindingCard
+              key={finding.id}
+              finding={finding}
+              isActive={finding.id === activeFindingId}
+              isDismissing={finding.id === dismissingId}
+              onSelect={() => onFindingSelect(finding.id)}
+              onAccept={() => onAcceptFix(finding.id)}
+              onStartDismiss={() => setDismissingId(finding.id)}
+              onCancelDismiss={() => setDismissingId(null)}
+              onConfirmDismiss={(reason) => {
+                onDismiss(finding.id, reason);
+                setDismissingId(null);
+              }}
+              onUndo={() => onUndoAccept(finding.id)}
+              isLocked={isLocked}
+              role={role}
+            />
+          ))
         )}
       </div>
     </div>
@@ -230,116 +250,126 @@ function FindingCard({
 
   return (
     <div
+      id={`finding-card-${finding.id}`}
       onClick={onSelect}
       className={cn(
-        "px-5 py-3 cursor-pointer transition-base",
-        isActive && "bg-canvas-soft-2",
-        isResolved && "opacity-55"
+        "p-3.5 rounded-xl border transition-all duration-200 cursor-pointer shadow-xs",
+        isActive
+          ? "bg-indigo-50/70 border-indigo-500 ring-2 ring-indigo-500/25 shadow-md"
+          : "bg-white hover:bg-slate-50/80 border-slate-200/90",
+        isResolved && "opacity-60 bg-slate-50"
       )}
     >
       {/* Top row — severity badge + evidence status + rule ID */}
-      <div className="flex items-center gap-2 mb-1.5">
+      <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
         <span
           className={cn(
-            "px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded-[4px]",
-            SEVERITY_COLORS[finding.severity]
+            "px-2 py-0.5 text-[10px] font-bold uppercase rounded border",
+            SEVERITY_BADGES[finding.severity]
           )}
         >
           {finding.severity}
         </span>
+
         <span
           className={cn(
-            "text-caption font-medium",
-            EVIDENCE_COLORS[finding.evidenceStatus]
+            "text-[11px] font-semibold px-2 py-0.5 rounded border border-slate-200/60",
+            EVIDENCE_COLORS[finding.evidenceStatus]?.bg,
+            EVIDENCE_COLORS[finding.evidenceStatus]?.text
           )}
         >
           {EVIDENCE_LABELS[finding.evidenceStatus]}
         </span>
+
         {finding.ruleId && (
-          <span className="text-code text-mute bg-canvas-soft-2 px-1.5 py-0.5 rounded-[4px]">
+          <span className="text-[10px] font-mono font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
             {finding.ruleId}
           </span>
         )}
         {finding.sourceId && (
-          <span className="text-code text-mute bg-canvas-soft-2 px-1.5 py-0.5 rounded-[4px]">
+          <span className="text-[10px] font-mono font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
             {finding.sourceId}
           </span>
         )}
+
         {isResolved && (
           <span
             className={cn(
-              "text-[10px] font-semibold uppercase ml-auto",
+              "text-[10.5px] font-bold uppercase ml-auto px-2 py-0.5 rounded",
               finding.decision === "accepted"
-                ? "text-[#0070f3] dark:text-[#3291ff]"
-                : "text-mute"
+                ? "bg-emerald-100 text-emerald-800"
+                : "bg-slate-200 text-slate-700"
             )}
           >
-            {finding.decision === "accepted" ? "✓ Fixed" : "✕ Dismissed"}
+            {finding.decision === "accepted" ? "✓ Fix Applied" : "✕ Dismissed"}
           </span>
         )}
       </div>
 
       {/* Matched text */}
-      <p className="text-caption font-medium text-ink mb-1 truncate">
-        &ldquo;{finding.matchedText}&rdquo;
+      <p className="text-xs font-semibold text-slate-900 mb-1 leading-snug">
+        &ldquo;<span className="bg-amber-100/80 px-1 py-0.2 rounded text-slate-900">{finding.matchedText}</span>&rdquo;
       </p>
 
       {/* Explanation */}
-      <p className="text-caption text-body leading-5 mb-2">
+      <p className="text-xs text-slate-600 leading-relaxed mb-2.5">
         {finding.explanation}
       </p>
 
       {/* Suggested fix */}
       {finding.suggestedFix && finding.decision === "pending" && (
-        <div className="mb-2 px-3 py-2 bg-canvas-soft-2 rounded-[6px] border border-hairline">
-          <p className="text-[11px] text-mute font-medium mb-0.5">Suggested correction:</p>
-          <p className="text-caption font-medium text-ink">
+        <div className="mb-2.5 p-2.5 bg-emerald-50/60 rounded-lg border border-emerald-200/80">
+          <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 mb-0.5">
+            <span>✨</span>
+            <span>Suggested Correction:</span>
+          </div>
+          <p className="text-xs font-semibold text-emerald-950 font-mono">
             {finding.suggestedFix}
           </p>
           {finding.intentRationale && (
-            <p className="text-[11px] text-mute mt-1 italic">
-              {finding.intentRationale}
+            <p className="text-[11px] text-emerald-700 mt-1 italic leading-tight">
+              Reason: {finding.intentRationale}
             </p>
           )}
         </div>
       )}
 
-      {/* Dismissal reasons */}
+      {/* Dismissal options dialog */}
       {isDismissing && (
-        <div className="mb-2 px-3 py-2 bg-canvas-soft-2 rounded-[6px] border border-hairline">
-          <p className="text-[11px] text-mute font-medium mb-1.5">
-            Select dismissal reason:
+        <div className="mb-2.5 p-3 bg-slate-100 rounded-lg border border-slate-300 space-y-2">
+          <p className="text-xs font-bold text-slate-800">
+            Select rationale for dismissing this finding:
           </p>
-          <div className="flex flex-col gap-1 mb-2">
+          <div className="space-y-1">
             {DISMISSAL_REASONS.map((r) => (
-              <label key={r.value} className="flex items-center gap-1.5 cursor-pointer">
+              <label key={r.value} className="flex items-center gap-2 cursor-pointer text-xs text-slate-700">
                 <input
                   type="radio"
                   name={`dismiss-${finding.id}`}
                   checked={selectedReason === r.value}
                   onChange={() => setSelectedReason(r.value)}
-                  className="accent-accent"
+                  className="accent-indigo-600"
                 />
-                <span className="text-caption text-body">{r.label}</span>
+                <span>{r.label}</span>
               </label>
             ))}
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2 pt-1">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onConfirmDismiss(selectedReason);
               }}
-              className="text-caption font-semibold px-2.5 py-1 rounded-[6px] bg-canvas-soft-2 border border-hairline-strong text-ink hover:bg-hairline transition-base"
+              className="px-3 py-1 text-xs font-bold rounded-md bg-slate-800 text-white hover:bg-slate-900 transition-colors shadow-xs"
             >
-              Confirm Dismiss
+              Confirm Dismissal
             </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onCancelDismiss();
               }}
-              className="text-caption font-medium px-2.5 py-1 text-mute hover:text-body transition-base"
+              className="px-2 py-1 text-xs text-slate-600 hover:text-slate-900"
             >
               Cancel
             </button>
@@ -349,16 +379,17 @@ function FindingCard({
 
       {/* Action buttons */}
       {!isLocked && !isDismissing && (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2 pt-1">
           {finding.decision === "pending" && finding.suggestedFix && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onAccept();
               }}
-              className="text-caption font-semibold px-3 py-1 rounded-[100px] bg-accent text-on-primary hover:bg-accent-hover transition-base"
+              className="btn-pill text-xs font-bold px-3 py-1 h-7 bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs shadow-emerald-600/20"
             >
-              Accept Fix
+              <span>✓</span>
+              <span>Accept Fix</span>
             </button>
           )}
           {finding.decision === "pending" && (
@@ -367,9 +398,9 @@ function FindingCard({
                 e.stopPropagation();
                 onStartDismiss();
               }}
-              className="text-caption font-medium px-3 py-1 rounded-[100px] border border-hairline text-body hover:bg-canvas-soft-2 transition-base"
+              className="btn-pill btn-pill-secondary text-xs font-medium px-3 py-1 h-7 text-slate-600 hover:text-slate-900"
             >
-              Dismiss
+              Dismiss…
             </button>
           )}
           {finding.decision === "accepted" && (
@@ -378,9 +409,9 @@ function FindingCard({
                 e.stopPropagation();
                 onUndo();
               }}
-              className="text-caption font-medium px-3 py-1 rounded-[100px] border border-hairline text-body hover:bg-canvas-soft-2 transition-base"
+              className="btn-pill btn-pill-secondary text-xs font-medium px-3 py-1 h-7 text-slate-600 hover:text-slate-900"
             >
-              Undo
+              Undo Fix
             </button>
           )}
         </div>

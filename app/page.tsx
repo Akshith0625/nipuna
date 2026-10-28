@@ -8,6 +8,7 @@ import DiffViewer from "@/components/editor/diff-viewer";
 import ReviewPanel from "@/components/review/review-panel";
 import BrandKitManager from "@/components/brandkit/brand-kit-manager";
 import GuidelineHealthDashboard from "@/components/insights/guideline-health-dashboard";
+import SplashScreen from "@/components/layout/splash-screen";
 
 import { scanDraft } from "@/lib/engine/orchestrator";
 import type {
@@ -37,6 +38,8 @@ import { cn } from "@/lib/utils/cn";
 export default function Home() {
   const [activeTab, setActiveTab] = useState<string>("review");
   const [role, setRole] = useState<"creator" | "reviewer" | "admin">("creator");
+  const [showSplash, setShowSplash] = useState(false);
+  const [mobileWorkbenchTab, setMobileWorkbenchTab] = useState<"editor" | "findings" | "review">("editor");
 
   // Brand Kit State
   const [rules, setRules] = useState<BrandRule[]>([]);
@@ -67,6 +70,16 @@ export default function Home() {
 
   // Initialize from storage on client mount
   useEffect(() => {
+    // Check if splash has been shown this session
+    try {
+      const hasSeenSplash = sessionStorage.getItem("nipuna_splash_seen");
+      if (!hasSeenSplash) {
+        setShowSplash(true);
+        sessionStorage.setItem("nipuna_splash_seen", "1");
+      }
+    } catch {
+      // Ignore in strict privacy modes
+    }
     const loadedRules = getStoredRules();
     const loadedFacts = getStoredFacts();
     const loadedComments = getStoredComments();
@@ -417,35 +430,36 @@ export default function Home() {
         onTabChange={setActiveTab}
         role={role}
         onRoleChange={setRole}
+        onShowSplash={() => setShowSplash(true)}
       />
 
       {/* Main Workspace Body */}
       {activeTab === "review" && (
         <div className="flex flex-col flex-1 overflow-hidden">
           {/* Subheader / Document Status Toolbar */}
-          <div className="flex items-center justify-between border-b border-hairline px-5 py-2 bg-canvas">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-between border-b border-hairline/80 px-3 sm:px-5 py-2 bg-canvas gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <input
                 type="text"
                 value={docTitle}
                 onChange={(e) => setDocTitle(e.target.value)}
                 disabled={isLocked}
-                className="text-body-sm-strong text-ink bg-transparent focus:outline-none focus:ring-1 focus:ring-link rounded-[6px] px-1.5 -ml-1 w-64 sm:w-80 truncate"
+                className="text-body-sm-strong text-ink bg-transparent focus:outline-none focus:ring-1 focus:ring-indigo-500 rounded-md px-1.5 -ml-1 w-44 sm:w-72 truncate"
               />
-              <span className="text-hairline-strong">·</span>
-              <span className="text-caption-mono px-2 py-0.5 rounded-[6px] bg-canvas-soft-2 text-body border border-hairline">
-                v1.0 {isLocked ? "(Locked)" : "(Editable)"}
+              <span className="text-hairline-strong hidden xs:inline">·</span>
+              <span className="text-caption-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0 text-[11px]">
+                v1.0 {isLocked ? "🔒 Locked" : "✏️ Editable"}
               </span>
 
-              {/* View toggle — Vercel tab-ghost pattern */}
-              <div className="hidden sm:flex items-center bg-canvas-soft-2 rounded-[6px] p-[2px] border border-hairline">
+              {/* View toggle — Desktop only */}
+              <div className="hidden md:flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-[2px] border border-hairline">
                 <button
                   onClick={() => setViewMode("editor")}
                   className={cn(
-                    "px-3 py-[3px] rounded-[4px] text-body-sm-strong transition-base",
+                    "px-3 py-1 rounded-md text-caption font-semibold transition-all",
                     viewMode === "editor"
-                      ? "bg-canvas shadow-sm text-ink"
-                      : "text-mute hover:text-body"
+                      ? "bg-white dark:bg-slate-900 shadow-xs text-ink"
+                      : "text-mute hover:text-ink"
                   )}
                 >
                   Editor View
@@ -453,10 +467,10 @@ export default function Home() {
                 <button
                   onClick={() => setViewMode("diff")}
                   className={cn(
-                    "px-3 py-[3px] rounded-[4px] text-body-sm-strong transition-base",
+                    "px-3 py-1 rounded-md text-caption font-semibold transition-all",
                     viewMode === "diff"
-                      ? "bg-canvas shadow-sm text-ink"
-                      : "text-mute hover:text-body"
+                      ? "bg-white dark:bg-slate-900 shadow-xs text-ink"
+                      : "text-mute hover:text-ink"
                   )}
                 >
                   Diff Comparison
@@ -464,20 +478,20 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right side drawer tab switch */}
-            <div className="flex items-center gap-1">
+            {/* Desktop right side drawer tab switch */}
+            <div className="hidden lg:flex items-center gap-1.5">
               <button
                 onClick={() => setRightPanelTab("findings")}
                 className={cn(
-                  "px-3 py-[5px] text-body-sm-strong rounded-[6px] transition-base",
+                  "px-3 py-1 text-caption font-semibold rounded-lg transition-all",
                   rightPanelTab === "findings"
-                    ? "bg-canvas-soft-2 text-ink border border-hairline"
-                    : "text-mute hover:text-body"
+                    ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 shadow-xs"
+                    : "text-mute hover:text-ink hover:bg-canvas-soft"
                 )}
               >
                 Findings ({findings.length})
                 {unresolvedCount > 0 && (
-                  <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-error-soft text-error font-semibold font-mono">
+                  <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 font-bold font-mono">
                     {unresolvedCount}
                   </span>
                 )}
@@ -485,15 +499,15 @@ export default function Home() {
               <button
                 onClick={() => setRightPanelTab("review")}
                 className={cn(
-                  "px-3 py-[5px] text-body-sm-strong rounded-[6px] transition-base",
+                  "px-3 py-1 text-caption font-semibold rounded-lg transition-all",
                   rightPanelTab === "review"
-                    ? "bg-canvas-soft-2 text-ink border border-hairline"
-                    : "text-mute hover:text-body"
+                    ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 shadow-xs"
+                    : "text-mute hover:text-ink hover:bg-canvas-soft"
                 )}
               >
                 Workflow & Review
                 {comments.length > 0 && (
-                  <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-canvas-soft-2 text-body font-mono">
+                  <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-700 font-mono">
                     {comments.length}
                   </span>
                 )}
@@ -501,10 +515,69 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Split Screen Workbench */}
-          <div className="flex flex-1 overflow-hidden">
+          {/* Mobile Workbench Segmented Switcher (< lg screens) */}
+          <div className="flex lg:hidden items-center justify-around border-b border-hairline/80 bg-slate-100/70 dark:bg-slate-800/60 p-1.5 gap-1.5">
+            <button
+              onClick={() => setMobileWorkbenchTab("editor")}
+              className={cn(
+                "flex-1 py-1.5 px-2 text-caption font-semibold rounded-md text-center transition-all flex items-center justify-center gap-1",
+                mobileWorkbenchTab === "editor"
+                  ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs border border-indigo-200 dark:border-indigo-800"
+                  : "text-mute hover:text-ink"
+              )}
+            >
+              <span>📝 Draft</span>
+            </button>
+            <button
+              onClick={() => {
+                setMobileWorkbenchTab("findings");
+                setRightPanelTab("findings");
+              }}
+              className={cn(
+                "flex-1 py-1.5 px-2 text-caption font-semibold rounded-md text-center transition-all flex items-center justify-center gap-1.5",
+                mobileWorkbenchTab === "findings"
+                  ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs border border-indigo-200 dark:border-indigo-800"
+                  : "text-mute hover:text-ink"
+              )}
+            >
+              <span>🔍 Findings</span>
+              <span className={cn(
+                "px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold",
+                unresolvedCount > 0 ? "bg-rose-100 text-rose-700" : "bg-slate-200 text-slate-700"
+              )}>
+                {findings.length}
+              </span>
+            </button>
+            <button
+              onClick={() => {
+                setMobileWorkbenchTab("review");
+                setRightPanelTab("review");
+              }}
+              className={cn(
+                "flex-1 py-1.5 px-2 text-caption font-semibold rounded-md text-center transition-all flex items-center justify-center gap-1.5",
+                mobileWorkbenchTab === "review"
+                  ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs border border-indigo-200 dark:border-indigo-800"
+                  : "text-mute hover:text-ink"
+              )}
+            >
+              <span>⚖️ Review</span>
+              {comments.length > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-indigo-50 text-indigo-700">
+                  {comments.length}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* Responsive Split Screen Workbench */}
+          <div className="flex flex-1 overflow-hidden relative">
             {/* Center Area: Editor or Diff View */}
-            <div className="flex-1 flex flex-col overflow-hidden bg-canvas-soft">
+            <div
+              className={cn(
+                "flex-1 flex-col overflow-hidden bg-canvas-soft",
+                mobileWorkbenchTab === "editor" ? "flex" : "hidden lg:flex"
+              )}
+            >
               {viewMode === "editor" ? (
                 <DraftWorkspace
                   content={content}
@@ -514,6 +587,8 @@ export default function Home() {
                   onFindingClick={(id) => {
                     setActiveFindingId(id);
                     setRightPanelTab("findings");
+                    // On mobile, auto switch to findings panel so user views the card immediately
+                    setMobileWorkbenchTab("findings");
                   }}
                   onRunCheck={handleRunCheck}
                   onLoadDraft={handleLoadDraft}
@@ -534,13 +609,36 @@ export default function Home() {
               )}
             </div>
 
-            {/* Right Side Drawer */}
-            <div className="w-[380px] lg:w-[420px] xl:w-[460px] h-full flex flex-col shrink-0 border-l border-hairline bg-canvas">
-              {rightPanelTab === "findings" ? (
+            {/* Right Side Drawer / Mobile View */}
+            <div
+              className={cn(
+                "w-full lg:w-[420px] xl:w-[460px] h-full flex flex-col shrink-0 border-l border-hairline bg-canvas",
+                mobileWorkbenchTab !== "editor" ? "flex" : "hidden lg:flex"
+              )}
+            >
+              {/* Mobile Back-to-Draft header button */}
+              <div className="flex lg:hidden items-center justify-between px-4 py-2 border-b border-hairline bg-canvas-soft/90">
+                <button
+                  onClick={() => setMobileWorkbenchTab("editor")}
+                  className="inline-flex items-center gap-1.5 text-caption font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span>Back to Draft Editor</span>
+                </button>
+                <span className="text-[11px] text-mute uppercase font-mono font-medium">
+                  {mobileWorkbenchTab === "findings" ? "Inspection Mode" : "Review Workflow"}
+                </span>
+              </div>
+
+              {(mobileWorkbenchTab === "findings" || (rightPanelTab === "findings" && mobileWorkbenchTab === "editor")) ? (
                 <FindingsPanel
                   findings={findings}
                   activeFindingId={activeFindingId}
-                  onFindingSelect={setActiveFindingId}
+                  onFindingSelect={(id) => {
+                    setActiveFindingId(id);
+                  }}
                   onAcceptFix={handleAcceptFix}
                   onDismiss={handleDismiss}
                   onUndoAccept={handleUndoAccept}
@@ -590,6 +688,9 @@ export default function Home() {
           onNavigateToRule={() => setActiveTab("brandkit")}
         />
       )}
+
+      {/* Interactive Splash Screen */}
+      {showSplash && <SplashScreen onClose={() => setShowSplash(false)} />}
     </div>
   );
 }

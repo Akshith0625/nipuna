@@ -16,11 +16,11 @@ interface ReviewPanelProps {
   onAddComment: (text: string) => void;
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  draft: { label: "Draft", color: "text-mute" },
-  in_review: { label: "In Review", color: "text-[#f5a623]" },
-  changes_requested: { label: "Changes Requested", color: "text-[#ee0000] dark:text-[#ff6666]" },
-  approved: { label: "Approved", color: "text-[#0070f3] dark:text-[#3291ff]" },
+const STATUS_BADGES: Record<string, { label: string; badgeClass: string; icon: string }> = {
+  draft: { label: "Draft Workspace", badgeClass: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700", icon: "✏️" },
+  in_review: { label: "Under Active Review", badgeClass: "bg-amber-50 text-amber-700 border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800", icon: "👀" },
+  changes_requested: { label: "Changes Requested", badgeClass: "bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800", icon: "⚠️" },
+  approved: { label: "Approved & Locked", badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800", icon: "✓" },
 };
 
 export default function ReviewPanel({
@@ -41,7 +41,7 @@ export default function ReviewPanel({
   const acceptedCount = findings.filter((f) => f.decision === "accepted").length;
   const dismissedCount = findings.filter((f) => f.decision === "dismissed").length;
 
-  const statusInfo = STATUS_LABELS[reviewStatus];
+  const currentStatus = STATUS_BADGES[reviewStatus] || STATUS_BADGES.draft;
 
   function handleAddComment() {
     if (!commentText.trim()) return;
@@ -50,35 +50,39 @@ export default function ReviewPanel({
   }
 
   return (
-    <div className="flex flex-col h-full bg-canvas">
+    <div className="flex flex-col h-full bg-canvas text-ink">
       {/* Status header */}
-      <div className="border-b border-hairline px-5 py-3">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-body-sm-strong text-ink">Review Workflow</h2>
-          <span className={cn("text-caption-mono font-medium uppercase", statusInfo.color)}>
-            {statusInfo.label}
+      <div className="border-b border-hairline/80 px-5 py-4 bg-canvas-soft/40 backdrop-blur-sm">
+        <div className="flex items-center justify-between mb-3.5">
+          <div>
+            <h2 className="text-body-sm-strong text-ink tracking-tight">Review Workflow</h2>
+            <p className="text-[11px] text-mute">Track governance checks and sign-off</p>
+          </div>
+          <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border shadow-xs", currentStatus.badgeClass)}>
+            <span>{currentStatus.icon}</span>
+            <span>{currentStatus.label}</span>
           </span>
         </div>
 
-        {/* Resolution summary */}
-        <div className="grid grid-cols-3 gap-2 mb-3">
-          <div className="text-center py-2 bg-canvas-soft-2 rounded-[6px] border border-hairline">
-            <div className="text-[16px] font-semibold text-[#ee0000] dark:text-[#ff6666] tabular-nums font-mono">
+        {/* Resolution summary cards */}
+        <div className="grid grid-cols-3 gap-2.5 mb-3.5">
+          <div className="text-center py-2.5 px-2 bg-canvas rounded-lg border border-rose-200/60 dark:border-rose-900/40 shadow-xs hover:shadow-card transition-all">
+            <div className="text-[18px] font-bold text-rose-600 dark:text-rose-400 tabular-nums font-mono leading-none mb-1">
               {pendingCount}
             </div>
-            <div className="text-[10px] text-mute uppercase font-mono">Open</div>
+            <div className="text-[10px] text-rose-700 dark:text-rose-400/80 uppercase font-semibold tracking-wider font-mono">Open</div>
           </div>
-          <div className="text-center py-2 bg-canvas-soft-2 rounded-[6px] border border-hairline">
-            <div className="text-[16px] font-semibold text-[#0070f3] dark:text-[#3291ff] tabular-nums font-mono">
+          <div className="text-center py-2.5 px-2 bg-canvas rounded-lg border border-emerald-200/60 dark:border-emerald-900/40 shadow-xs hover:shadow-card transition-all">
+            <div className="text-[18px] font-bold text-emerald-600 dark:text-emerald-400 tabular-nums font-mono leading-none mb-1">
               {acceptedCount}
             </div>
-            <div className="text-[10px] text-mute uppercase font-mono">Fixed</div>
+            <div className="text-[10px] text-emerald-700 dark:text-emerald-400/80 uppercase font-semibold tracking-wider font-mono">Fixed</div>
           </div>
-          <div className="text-center py-2 bg-canvas-soft-2 rounded-[6px] border border-hairline">
-            <div className="text-[16px] font-semibold text-mute tabular-nums font-mono">
+          <div className="text-center py-2.5 px-2 bg-canvas rounded-lg border border-hairline shadow-xs hover:shadow-card transition-all">
+            <div className="text-[18px] font-bold text-mute tabular-nums font-mono leading-none mb-1">
               {dismissedCount}
             </div>
-            <div className="text-[10px] text-mute uppercase font-mono">Dismissed</div>
+            <div className="text-[10px] text-mute uppercase font-semibold tracking-wider font-mono">Dismissed</div>
           </div>
         </div>
 
@@ -87,20 +91,23 @@ export default function ReviewPanel({
           <button
             onClick={onSubmitForReview}
             disabled={findings.length === 0}
-            className="w-full btn-pill btn-pill-primary disabled:opacity-40"
+            className="w-full btn-pill btn-pill-primary shadow-sm hover:shadow-md transition-all font-semibold flex items-center justify-center gap-2"
           >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
             Submit for Review
           </button>
         )}
 
         {role === "reviewer" && (reviewStatus === "in_review" || reviewStatus === "changes_requested") && (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2.5 bg-canvas p-3 rounded-lg border border-hairline shadow-xs">
             <textarea
               value={reviewNotes}
               onChange={(e) => setReviewNotes(e.target.value)}
-              placeholder="Reviewer notes (optional)…"
+              placeholder="Reviewer notes or guidance for creator…"
               rows={2}
-              className="w-full text-caption px-3 py-2 bg-canvas-soft-2 border border-hairline rounded-[6px] resize-none text-ink placeholder:text-mute focus:outline-none focus:ring-1 focus:ring-link"
+              className="w-full text-caption px-3 py-2 bg-canvas-soft border border-hairline rounded-md resize-none text-ink placeholder:text-mute focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
             />
             <div className="flex items-center gap-2">
               <button
@@ -108,30 +115,34 @@ export default function ReviewPanel({
                   onRequestChanges(reviewNotes);
                   setReviewNotes("");
                 }}
-                className="flex-1 text-caption font-semibold px-3 py-2 rounded-[100px] border border-hairline text-[#ee0000] dark:text-[#ff6666] hover:bg-canvas-soft-2 transition-base"
+                className="flex-1 text-caption font-semibold px-3 py-2 rounded-full border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all shadow-xs"
               >
                 Request Changes
               </button>
               <button
                 onClick={onApproveVersion}
                 disabled={pendingCount > 0}
-                className="flex-1 text-caption font-semibold px-3 py-2 rounded-[100px] bg-accent text-on-primary hover:bg-accent-hover transition-base disabled:opacity-40"
+                className="flex-1 text-caption font-semibold px-3 py-2 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-xs disabled:opacity-40 flex items-center justify-center gap-1.5"
               >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
                 Approve
               </button>
             </div>
             {pendingCount > 0 && (
-              <p className="text-[11px] text-mute">
-                {pendingCount} finding{pendingCount > 1 ? "s" : ""} still unresolved. Resolve all before approving.
+              <p className="text-[11px] text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                <span>ℹ️</span> {pendingCount} unresolved finding{pendingCount > 1 ? "s" : ""}. Resolve before approving.
               </p>
             )}
           </div>
         )}
 
         {reviewStatus === "approved" && (
-          <div className="px-3 py-2 bg-[#f0fdf4] dark:bg-[rgba(5,150,105,0.08)] border border-[#bbf7d0] dark:border-[rgba(5,150,105,0.2)] rounded-[6px]">
-            <p className="text-caption font-medium text-[#166534] dark:text-[#86efac]">
-              ✓ Version approved and locked.
+          <div className="px-3.5 py-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-lg shadow-xs flex items-center gap-2">
+            <span className="text-emerald-600 text-sm">✓</span>
+            <p className="text-caption font-semibold text-emerald-800 dark:text-emerald-300">
+              Version approved and locked for publication.
             </p>
           </div>
         )}
