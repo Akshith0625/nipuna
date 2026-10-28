@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Edit3, Lock, FileText, Search, GitPullRequest } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
 import DraftWorkspace from "@/components/editor/draft-workspace";
 import FindingsPanel from "@/components/editor/findings-panel";
@@ -447,8 +448,18 @@ export default function Home() {
                 className="text-body-sm-strong text-ink bg-transparent focus:outline-none focus:ring-1 focus:ring-indigo-500 rounded-md px-1.5 -ml-1 w-44 sm:w-72 truncate"
               />
               <span className="text-hairline-strong hidden xs:inline">·</span>
-              <span className="text-caption-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0 text-[11px]">
-                v1.0 {isLocked ? "🔒 Locked" : "✏️ Editable"}
+              <span className="text-caption-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0 text-[11px] inline-flex items-center gap-1.5">
+                {isLocked ? (
+                  <>
+                    <Lock className="w-3.5 h-3.5 text-slate-500" strokeWidth={1.75} />
+                    <span>v1.0 (Locked)</span>
+                  </>
+                ) : (
+                  <>
+                    <Edit3 className="w-3.5 h-3.5 text-slate-500" strokeWidth={1.75} />
+                    <span>v1.0 (Editable)</span>
+                  </>
+                )}
               </span>
 
               {/* View toggle — Desktop only */}
@@ -483,31 +494,32 @@ export default function Home() {
               <button
                 onClick={() => setRightPanelTab("findings")}
                 className={cn(
-                  "px-3 py-1 text-caption font-semibold rounded-lg transition-all",
+                  "px-3 py-1 text-caption font-semibold rounded-lg transition-all inline-flex items-center gap-1.5",
                   rightPanelTab === "findings"
                     ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 shadow-xs"
                     : "text-mute hover:text-ink hover:bg-canvas-soft"
                 )}
               >
-                Findings ({findings.length})
-                {unresolvedCount > 0 && (
-                  <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 font-bold font-mono">
-                    {unresolvedCount}
-                  </span>
-                )}
+                <span>Findings</span>
+                <span className={cn(
+                  "px-1.5 py-0.2 rounded-full text-[10.5px] font-mono font-bold",
+                  unresolvedCount > 0 ? "bg-rose-100 text-rose-700" : "bg-slate-100 text-slate-600"
+                )}>
+                  {unresolvedCount > 0 ? unresolvedCount : findings.length}
+                </span>
               </button>
               <button
                 onClick={() => setRightPanelTab("review")}
                 className={cn(
-                  "px-3 py-1 text-caption font-semibold rounded-lg transition-all",
+                  "px-3 py-1 text-caption font-semibold rounded-lg transition-all inline-flex items-center gap-1.5",
                   rightPanelTab === "review"
                     ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 shadow-xs"
                     : "text-mute hover:text-ink hover:bg-canvas-soft"
                 )}
               >
-                Workflow & Review
+                <span>Workflow & Review</span>
                 {comments.length > 0 && (
-                  <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-700 font-mono">
+                  <span className="px-1.5 py-0.2 rounded-full text-[10.5px] bg-slate-100 text-slate-700 font-mono">
                     {comments.length}
                   </span>
                 )}
@@ -520,13 +532,14 @@ export default function Home() {
             <button
               onClick={() => setMobileWorkbenchTab("editor")}
               className={cn(
-                "flex-1 py-1.5 px-2 text-caption font-semibold rounded-md text-center transition-all flex items-center justify-center gap-1",
+                "flex-1 py-1.5 px-2 text-caption font-semibold rounded-md text-center transition-all inline-flex items-center justify-center gap-1.5",
                 mobileWorkbenchTab === "editor"
                   ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs border border-indigo-200 dark:border-indigo-800"
                   : "text-mute hover:text-ink"
               )}
             >
-              <span>📝 Draft</span>
+              <FileText className="w-3.5 h-3.5 text-slate-500" strokeWidth={1.75} />
+              <span>Draft</span>
             </button>
             <button
               onClick={() => {
@@ -534,18 +547,19 @@ export default function Home() {
                 setRightPanelTab("findings");
               }}
               className={cn(
-                "flex-1 py-1.5 px-2 text-caption font-semibold rounded-md text-center transition-all flex items-center justify-center gap-1.5",
+                "flex-1 py-1.5 px-2 text-caption font-semibold rounded-md text-center transition-all inline-flex items-center justify-center gap-1.5",
                 mobileWorkbenchTab === "findings"
                   ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs border border-indigo-200 dark:border-indigo-800"
                   : "text-mute hover:text-ink"
               )}
             >
-              <span>🔍 Findings</span>
+              <Search className="w-3.5 h-3.5 text-slate-500" strokeWidth={1.75} />
+              <span>Findings</span>
               <span className={cn(
                 "px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold",
                 unresolvedCount > 0 ? "bg-rose-100 text-rose-700" : "bg-slate-200 text-slate-700"
               )}>
-                {findings.length}
+                {unresolvedCount > 0 ? unresolvedCount : findings.length}
               </span>
             </button>
             <button
@@ -554,13 +568,14 @@ export default function Home() {
                 setRightPanelTab("review");
               }}
               className={cn(
-                "flex-1 py-1.5 px-2 text-caption font-semibold rounded-md text-center transition-all flex items-center justify-center gap-1.5",
+                "flex-1 py-1.5 px-2 text-caption font-semibold rounded-md text-center transition-all inline-flex items-center justify-center gap-1.5",
                 mobileWorkbenchTab === "review"
                   ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs border border-indigo-200 dark:border-indigo-800"
                   : "text-mute hover:text-ink"
               )}
             >
-              <span>⚖️ Review</span>
+              <GitPullRequest className="w-3.5 h-3.5 text-slate-500" strokeWidth={1.75} />
+              <span>Review</span>
               {comments.length > 0 && (
                 <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-indigo-50 text-indigo-700">
                   {comments.length}

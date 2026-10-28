@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Activity, Search, Scale, AlertTriangle, Lightbulb, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type {
   BrandRule,
@@ -195,7 +196,7 @@ export default function GuidelineHealthDashboard({
               <span className="text-[11px] text-slate-500 uppercase font-mono font-semibold tracking-wider">
                 Audits Run
               </span>
-              <span className="text-base">🚀</span>
+              <Activity className="w-4 h-4 text-slate-500" strokeWidth={1.75} />
             </div>
             <div className="flex items-baseline gap-2 mt-2">
               <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 font-mono">
@@ -216,7 +217,7 @@ export default function GuidelineHealthDashboard({
               <span className="text-[11px] text-slate-500 uppercase font-mono font-semibold tracking-wider">
                 Rule Matches
               </span>
-              <span className="text-base">🔍</span>
+              <Search className="w-4 h-4 text-slate-500" strokeWidth={1.75} />
             </div>
             <div className="flex items-baseline gap-2 mt-2">
               <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 font-mono">
@@ -237,7 +238,7 @@ export default function GuidelineHealthDashboard({
               <span className="text-[11px] text-slate-500 uppercase font-mono font-semibold tracking-wider">
                 Dismissal Rate
               </span>
-              <span className="text-base">⚖️</span>
+              <Scale className="w-4 h-4 text-amber-600" strokeWidth={1.75} />
             </div>
             <div className="flex items-baseline gap-2 mt-2">
               <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-amber-600 font-mono">
@@ -258,7 +259,7 @@ export default function GuidelineHealthDashboard({
               <span className="text-[11px] text-rose-700 uppercase font-mono font-bold tracking-wider">
                 Contested Rules
               </span>
-              <span className="text-base">⚠️</span>
+              <AlertTriangle className="w-4 h-4 text-rose-600" strokeWidth={1.75} />
             </div>
             <div className="flex items-baseline gap-2 mt-2">
               <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-rose-600 font-mono">
@@ -280,7 +281,7 @@ export default function GuidelineHealthDashboard({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-base">💡</span>
+                  <Lightbulb className="w-4 h-4 text-amber-600 shrink-0" strokeWidth={2} />
                   <h2 className="text-xs sm:text-sm font-bold text-amber-950">
                     Policy Health Recommendation: Contested Guideline {stats.contestedList[0].ruleId}
                   </h2>
@@ -292,10 +293,10 @@ export default function GuidelineHealthDashboard({
 
               <button
                 onClick={() => onNavigateToRule?.(stats.contestedList[0].ruleId)}
-                className="btn-pill text-xs font-bold px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white shadow-xs shrink-0 self-start sm:self-auto"
+                className="rounded-lg inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white shadow-xs shrink-0 self-start sm:self-auto transition-colors"
               >
                 <span>Refine Rule in Brand Kit</span>
-                <span>→</span>
+                <ArrowRight className="w-3.5 h-3.5 text-white" strokeWidth={2} />
               </button>
             </div>
           </div>
@@ -436,17 +437,17 @@ export default function GuidelineHealthDashboard({
                       <td className="py-3 px-4 text-center">
                         {r.status === "clarification_needed" ? (
                           <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-200">
-                            <span>⚠️</span>
+                            <AlertTriangle className="w-3 h-3 text-rose-700" strokeWidth={2} />
                             <span>Refine Rule</span>
                           </span>
                         ) : r.status === "monitor" ? (
                           <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                            <span>👀</span>
+                            <AlertCircle className="w-3 h-3 text-amber-700" strokeWidth={2} />
                             <span>Monitor</span>
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                            <span>✓</span>
+                            <CheckCircle2 className="w-3 h-3 text-emerald-700" strokeWidth={2} />
                             <span>Healthy</span>
                           </span>
                         )}

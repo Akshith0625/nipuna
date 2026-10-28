@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { Sparkles, Check, Zap, CheckCircle2, X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type {
   Finding,
@@ -27,11 +28,11 @@ type EvidenceFilter = "all" | "actionable" | EvidenceStatus;
 
 /* ---------- Config ---------- */
 
-const CATEGORY_LABELS: Record<FindingCategory, { label: string; icon: string }> = {
-  terminology: { label: "Terminology", icon: "📖" },
-  claim: { label: "Claims", icon: "⚖️" },
-  tone: { label: "Tone & Voice", icon: "🎭" },
-  policy: { label: "Policy", icon: "📜" },
+const CATEGORY_LABELS: Record<FindingCategory, { label: string }> = {
+  terminology: { label: "Terminology" },
+  claim: { label: "Claims" },
+  tone: { label: "Tone & Voice" },
+  policy: { label: "Policy" },
 };
 
 const EVIDENCE_LABELS: Record<EvidenceStatus, string> = {
@@ -76,7 +77,7 @@ export default function FindingsPanel({
   isLocked,
 }: FindingsPanelProps) {
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
-  const [evidenceFilter, setEvidenceFilter] = useState<EvidenceFilter>("actionable");
+  const [evidenceFilter, setEvidenceFilter] = useState<EvidenceFilter>("all");
   const [dismissingId, setDismissingId] = useState<string | null>(null);
   const listContainerRef = useRef<HTMLDivElement>(null);
 
@@ -93,7 +94,7 @@ export default function FindingsPanel({
   const filtered = findings.filter((f) => {
     if (categoryFilter !== "all" && f.category !== categoryFilter) return false;
     if (evidenceFilter === "actionable") {
-      return f.evidenceStatus !== "supported";
+      return f.evidenceStatus !== "supported" && f.suggestedFix !== undefined;
     }
     if (evidenceFilter !== "all" && f.evidenceStatus !== evidenceFilter) return false;
     return true;
@@ -130,8 +131,8 @@ export default function FindingsPanel({
           </div>
         </div>
 
-        {/* Category Filters */}
-        <div className="flex items-center gap-1.5 flex-wrap pt-1">
+        {/* Tier 1: Category Filters ([All] | [Terminology] | [Claims] | [Tone & Voice] | [Policy]) */}
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
           {(["all", "terminology", "claim", "tone", "policy"] as CategoryFilter[]).map((cat) => {
             const isSelected = categoryFilter === cat;
             return (
@@ -139,7 +140,7 @@ export default function FindingsPanel({
                 key={cat}
                 onClick={() => setCategoryFilter(cat)}
                 className={cn(
-                  "px-2.5 py-1 text-xs font-medium rounded-lg transition-all",
+                  "px-2.5 py-1 text-xs font-medium rounded-lg transition-all shrink-0",
                   isSelected
                     ? "bg-indigo-600 text-white shadow-xs font-semibold"
                     : "text-slate-600 bg-slate-100 hover:bg-slate-200/70"
@@ -151,26 +152,29 @@ export default function FindingsPanel({
           })}
         </div>
 
-        {/* Evidence Status Filters */}
-        <div className="flex items-center gap-1.5 flex-wrap pt-1.5">
-          {(["actionable", "all", "conflict", "not_verified", "rule_match"] as EvidenceFilter[]).map((ev) => {
+        {/* Tier 2: Evidence Status Filters ([All Statuses] strictly BEFORE [Actionable] | [Fact Conflict] | [Unbacked Claim] | [Rule Match]) */}
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1.5 pb-0.5">
+          {(["all", "actionable", "conflict", "not_verified", "rule_match"] as EvidenceFilter[]).map((ev) => {
             const isSelected = evidenceFilter === ev;
             return (
               <button
                 key={ev}
                 onClick={() => setEvidenceFilter(ev)}
                 className={cn(
-                  "px-2 py-0.5 text-[11px] font-medium rounded-md transition-all",
+                  "px-2.5 py-1 text-[11px] font-medium rounded-md transition-all shrink-0 inline-flex items-center gap-1",
                   isSelected
-                    ? "bg-slate-800 text-white font-semibold"
-                    : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
+                    ? "bg-slate-800 text-white font-semibold shadow-xs"
+                    : "text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/60"
                 )}
               >
-                {ev === "actionable"
-                  ? "⚡ Actionable"
-                  : ev === "all"
-                  ? "All Statuses"
-                  : EVIDENCE_LABELS[ev as EvidenceStatus]}
+                {ev === "actionable" && <Zap className={cn("w-3 h-3", isSelected ? "text-amber-400" : "text-amber-500")} strokeWidth={2} />}
+                <span>
+                  {ev === "all"
+                    ? "All Statuses"
+                    : ev === "actionable"
+                    ? "Actionable"
+                    : EVIDENCE_LABELS[ev as EvidenceStatus]}
+                </span>
               </button>
             );
           })}
@@ -181,7 +185,7 @@ export default function FindingsPanel({
       <div ref={listContainerRef} className="flex-1 overflow-y-auto p-3 space-y-2.5">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-48 text-center p-6 bg-white rounded-xl border border-dashed border-slate-300">
-            <span className="text-2xl mb-2">🎯</span>
+            <CheckCircle2 className="w-8 h-8 text-emerald-500 mb-2" strokeWidth={1.75} />
             <p className="text-xs font-semibold text-slate-700">
               {findings.length === 0
                 ? "Click 'Run Governance Review' to scan your draft"
@@ -295,21 +299,33 @@ function FindingCard({
         {isResolved && (
           <span
             className={cn(
-              "text-[10.5px] font-bold uppercase ml-auto px-2 py-0.5 rounded",
+              "text-[10.5px] font-bold uppercase ml-auto px-2 py-0.5 rounded inline-flex items-center gap-1",
               finding.decision === "accepted"
                 ? "bg-emerald-100 text-emerald-800"
                 : "bg-slate-200 text-slate-700"
             )}
           >
-            {finding.decision === "accepted" ? "✓ Fix Applied" : "✕ Dismissed"}
+            {finding.decision === "accepted" ? (
+              <>
+                <Check className="w-3 h-3 text-emerald-700" strokeWidth={2.5} />
+                <span>Fix Applied</span>
+              </>
+            ) : (
+              <>
+                <X className="w-3 h-3 text-slate-600" strokeWidth={2.5} />
+                <span>Dismissed</span>
+              </>
+            )}
           </span>
         )}
       </div>
 
-      {/* Matched text */}
-      <p className="text-xs font-semibold text-slate-900 mb-1 leading-snug">
-        &ldquo;<span className="bg-amber-100/80 px-1 py-0.2 rounded text-slate-900">{finding.matchedText}</span>&rdquo;
-      </p>
+      {/* Matched text with tight quote formatting */}
+      <div className="mb-1 leading-snug">
+        <span className="bg-amber-100/90 text-amber-950 font-semibold px-1.5 py-0.5 rounded text-xs border border-amber-200/70 inline-block">
+          &ldquo;{finding.matchedText.trim()}&rdquo;
+        </span>
+      </div>
 
       {/* Explanation */}
       <p className="text-xs text-slate-600 leading-relaxed mb-2.5">
@@ -318,9 +334,9 @@ function FindingCard({
 
       {/* Suggested fix */}
       {finding.suggestedFix && finding.decision === "pending" && (
-        <div className="mb-2.5 p-2.5 bg-emerald-50/60 rounded-lg border border-emerald-200/80">
+        <div className="mb-2.5 p-2.5 bg-emerald-50/70 rounded-lg border border-emerald-200/80">
           <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 mb-0.5">
-            <span>✨</span>
+            <Sparkles className="w-3.5 h-3.5 text-emerald-700" strokeWidth={1.75} />
             <span>Suggested Correction:</span>
           </div>
           <p className="text-xs font-semibold text-emerald-950 font-mono">
@@ -360,7 +376,7 @@ function FindingCard({
                 e.stopPropagation();
                 onConfirmDismiss(selectedReason);
               }}
-              className="px-3 py-1 text-xs font-bold rounded-md bg-slate-800 text-white hover:bg-slate-900 transition-colors shadow-xs"
+              className="px-3 py-1 text-xs font-bold rounded-lg bg-slate-800 text-white hover:bg-slate-900 transition-colors shadow-xs"
             >
               Confirm Dismissal
             </button>
@@ -377,7 +393,7 @@ function FindingCard({
         </div>
       )}
 
-      {/* Action buttons */}
+      {/* Action buttons (rounded-lg matching card system) */}
       {!isLocked && !isDismissing && (
         <div className="flex items-center gap-2 pt-1">
           {finding.decision === "pending" && finding.suggestedFix && (
@@ -386,9 +402,9 @@ function FindingCard({
                 e.stopPropagation();
                 onAccept();
               }}
-              className="btn-pill text-xs font-bold px-3 py-1 h-7 bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs shadow-emerald-600/20"
+              className="rounded-lg inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 h-8 bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs transition-colors"
             >
-              <span>✓</span>
+              <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
               <span>Accept Fix</span>
             </button>
           )}
@@ -398,9 +414,9 @@ function FindingCard({
                 e.stopPropagation();
                 onStartDismiss();
               }}
-              className="btn-pill btn-pill-secondary text-xs font-medium px-3 py-1 h-7 text-slate-600 hover:text-slate-900"
+              className="rounded-lg inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 h-8 border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-colors"
             >
-              Dismiss…
+              <span>Dismiss…</span>
             </button>
           )}
           {finding.decision === "accepted" && (
@@ -409,9 +425,9 @@ function FindingCard({
                 e.stopPropagation();
                 onUndo();
               }}
-              className="btn-pill btn-pill-secondary text-xs font-medium px-3 py-1 h-7 text-slate-600 hover:text-slate-900"
+              className="rounded-lg inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 h-8 border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-colors"
             >
-              Undo Fix
+              <span>Undo Fix</span>
             </button>
           )}
         </div>

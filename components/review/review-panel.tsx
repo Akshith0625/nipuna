@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Edit3, Eye, AlertTriangle, CheckCircle2, Info, Check, Send } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { Finding, ReviewComment, ReviewEvent } from "@/lib/engine/types";
 
@@ -16,11 +17,11 @@ interface ReviewPanelProps {
   onAddComment: (text: string) => void;
 }
 
-const STATUS_BADGES: Record<string, { label: string; badgeClass: string; icon: string }> = {
-  draft: { label: "Draft Workspace", badgeClass: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700", icon: "✏️" },
-  in_review: { label: "Under Active Review", badgeClass: "bg-amber-50 text-amber-700 border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800", icon: "👀" },
-  changes_requested: { label: "Changes Requested", badgeClass: "bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800", icon: "⚠️" },
-  approved: { label: "Approved & Locked", badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800", icon: "✓" },
+const STATUS_BADGES: Record<string, { label: string; badgeClass: string; icon: typeof Edit3 }> = {
+  draft: { label: "Draft Workspace", badgeClass: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700", icon: Edit3 },
+  in_review: { label: "Under Active Review", badgeClass: "bg-amber-50 text-amber-700 border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800", icon: Eye },
+  changes_requested: { label: "Changes Requested", badgeClass: "bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800", icon: AlertTriangle },
+  approved: { label: "Approved & Locked", badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800", icon: CheckCircle2 },
 };
 
 export default function ReviewPanel({
@@ -42,6 +43,7 @@ export default function ReviewPanel({
   const dismissedCount = findings.filter((f) => f.decision === "dismissed").length;
 
   const currentStatus = STATUS_BADGES[reviewStatus] || STATUS_BADGES.draft;
+  const StatusIcon = currentStatus.icon;
 
   function handleAddComment() {
     if (!commentText.trim()) return;
@@ -59,7 +61,7 @@ export default function ReviewPanel({
             <p className="text-[11px] text-mute">Track governance checks and sign-off</p>
           </div>
           <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border shadow-xs", currentStatus.badgeClass)}>
-            <span>{currentStatus.icon}</span>
+            <StatusIcon className="w-3.5 h-3.5" strokeWidth={1.75} />
             <span>{currentStatus.label}</span>
           </span>
         </div>
@@ -91,12 +93,10 @@ export default function ReviewPanel({
           <button
             onClick={onSubmitForReview}
             disabled={findings.length === 0}
-            className="w-full btn-pill btn-pill-primary shadow-sm hover:shadow-md transition-all font-semibold flex items-center justify-center gap-2"
+            className="w-full btn-pill btn-pill-primary shadow-sm hover:shadow-md transition-all font-semibold inline-flex items-center justify-center gap-2"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
-            Submit for Review
+            <Send className="w-4 h-4" strokeWidth={1.75} />
+            <span>Submit for Review</span>
           </button>
         )}
 
@@ -122,25 +122,24 @@ export default function ReviewPanel({
               <button
                 onClick={onApproveVersion}
                 disabled={pendingCount > 0}
-                className="flex-1 text-caption font-semibold px-3 py-2 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-xs disabled:opacity-40 flex items-center justify-center gap-1.5"
+                className="flex-1 text-caption font-semibold px-3 py-2 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-xs disabled:opacity-40 inline-flex items-center justify-center gap-1.5"
               >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                </svg>
-                Approve
+                <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
+                <span>Approve</span>
               </button>
             </div>
             {pendingCount > 0 && (
-              <p className="text-[11px] text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                <span>ℹ️</span> {pendingCount} unresolved finding{pendingCount > 1 ? "s" : ""}. Resolve before approving.
+              <p className="text-[11px] text-amber-600 dark:text-amber-400 inline-flex items-center gap-1">
+                <Info className="w-3.5 h-3.5 text-amber-500" strokeWidth={1.75} />
+                <span>{pendingCount} unresolved finding{pendingCount > 1 ? "s" : ""}. Resolve before approving.</span>
               </p>
             )}
           </div>
         )}
 
         {reviewStatus === "approved" && (
-          <div className="px-3.5 py-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-lg shadow-xs flex items-center gap-2">
-            <span className="text-emerald-600 text-sm">✓</span>
+          <div className="px-3.5 py-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-lg shadow-xs inline-flex items-center gap-2 w-full">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" strokeWidth={2} />
             <p className="text-caption font-semibold text-emerald-800 dark:text-emerald-300">
               Version approved and locked for publication.
             </p>

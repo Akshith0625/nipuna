@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useEffect, type ChangeEvent } from "react";
+import { useRef, useEffect, useState, type ChangeEvent } from "react";
+import { Upload, Zap, Check, Edit3, Eye } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { Finding, EvidenceStatus } from "@/lib/engine/types";
 
@@ -96,6 +97,7 @@ export default function DraftWorkspace({
 }: DraftWorkspaceProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isLiveEditing, setIsLiveEditing] = useState(false);
   const hasFindings = findings.length > 0;
   const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
 
@@ -145,6 +147,11 @@ export default function DraftWorkspace({
     }
   }
 
+  function handleTriggerRunCheck() {
+    setIsLiveEditing(false);
+    onRunCheck();
+  }
+
   return (
     <div className="flex flex-col h-full bg-slate-50/50">
       {/* Toolbar */}
@@ -154,7 +161,10 @@ export default function DraftWorkspace({
           <select
             onChange={(e) => {
               const idx = parseInt(e.target.value);
-              if (!isNaN(idx)) onLoadDraft(idx);
+              if (!isNaN(idx)) {
+                onLoadDraft(idx);
+                setIsLiveEditing(false);
+              }
             }}
             defaultValue=""
             disabled={isLocked}
@@ -176,30 +186,57 @@ export default function DraftWorkspace({
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isLocked}
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 shadow-xs transition-all disabled:opacity-40 flex items-center gap-1.5"
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 shadow-xs transition-all disabled:opacity-40 inline-flex items-center gap-1.5"
           >
-            <span>📄</span>
+            <Upload className="w-3.5 h-3.5 text-slate-600" strokeWidth={1.75} />
             <span>Upload .docx</span>
           </button>
+
+          {/* Toggle between Highlights and Live Text Editor */}
+          {hasFindings && !isLocked && (
+            <button
+              onClick={() => setIsLiveEditing(!isLiveEditing)}
+              className={cn(
+                "text-xs font-semibold px-2.5 py-1.5 rounded-lg border transition-all inline-flex items-center gap-1.5",
+                isLiveEditing
+                  ? "bg-indigo-50 border-indigo-200 text-indigo-700 shadow-xs"
+                  : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+              )}
+              title={isLiveEditing ? "View highlighted findings" : "Edit draft text directly"}
+            >
+              {isLiveEditing ? (
+                <>
+                  <Eye className="w-3.5 h-3.5 text-indigo-600" strokeWidth={1.75} />
+                  <span className="hidden sm:inline">Highlights View</span>
+                </>
+              ) : (
+                <>
+                  <Edit3 className="w-3.5 h-3.5 text-slate-600" strokeWidth={1.75} />
+                  <span className="hidden sm:inline">Live Edit</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
 
         {/* Right Toolbar Items */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <span className="text-[11.5px] font-mono text-slate-500 tabular-nums bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200/60">
             {wordCount} words
           </span>
 
           {scanDurationMs !== undefined && (
-            <span className="text-[11.5px] font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100 tabular-nums hidden sm:inline-block">
-              ⚡ {scanDurationMs}ms
+            <span className="text-[11.5px] font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100 tabular-nums hidden sm:inline-flex items-center gap-1">
+              <Zap className="w-3 h-3 text-indigo-500" strokeWidth={1.75} />
+              <span>{scanDurationMs}ms</span>
             </span>
           )}
 
           <button
-            onClick={onRunCheck}
+            onClick={handleTriggerRunCheck}
             disabled={isScanning || !content.trim() || isLocked}
             className={cn(
-              "btn-pill btn-pill-primary text-xs font-semibold shadow-sm shadow-indigo-500/25",
+              "btn-pill btn-pill-primary text-xs font-semibold shadow-sm shadow-indigo-500/25 inline-flex items-center gap-1.5",
               "disabled:opacity-40 disabled:cursor-not-allowed"
             )}
           >
@@ -210,7 +247,7 @@ export default function DraftWorkspace({
               </>
             ) : (
               <>
-                <span>⚡</span>
+                <Zap className="w-3.5 h-3.5 text-white" strokeWidth={1.75} />
                 <span>Run Governance Review</span>
               </>
             )}
@@ -221,7 +258,7 @@ export default function DraftWorkspace({
       {/* Locked banner */}
       {isLocked && (
         <div className="px-5 py-2.5 bg-emerald-50 border-b border-emerald-200 flex items-center gap-2">
-          <span className="text-emerald-600 font-bold">✓</span>
+          <Check className="w-4 h-4 text-emerald-600" strokeWidth={2} />
           <p className="text-xs font-semibold text-emerald-800">
             This version has been approved and locked. Create a new revision to make further changes.
           </p>
@@ -231,7 +268,7 @@ export default function DraftWorkspace({
       {/* Editor area with auto-scrolling container */}
       <div ref={containerRef} className="flex-1 overflow-auto p-4 sm:p-8">
         <div className="max-w-[760px] mx-auto min-h-full bg-white rounded-xl border border-slate-200/80 shadow-sm p-6 sm:p-10">
-          {hasFindings ? (
+          {hasFindings && !isLiveEditing ? (
             // Highlighted read view with clickable marks
             <div
               className="text-[14.5px] leading-relaxed text-slate-800 cursor-text min-h-[400px] whitespace-pre-wrap select-text"
@@ -241,7 +278,7 @@ export default function DraftWorkspace({
               }}
             />
           ) : (
-            // Editable textarea
+            // Editable textarea (active when editing or when no findings present)
             <textarea
               value={content}
               onChange={(e) => onContentChange(e.target.value)}
