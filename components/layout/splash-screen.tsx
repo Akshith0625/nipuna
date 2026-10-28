@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils/cn";
 
 interface SplashScreenProps {
@@ -24,14 +24,14 @@ export default function SplashScreen({
     "Activating closed-loop governance engine...",
   ];
 
-  const handleDismiss = () => {
+  const handleDismiss = useCallback(() => {
     setIsDismissing(true);
     setTimeout(() => {
       setIsVisible(false);
       onFinish?.();
       onClose?.();
     }, 450);
-  };
+  }, [onFinish, onClose]);
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase(1), 350);
@@ -45,7 +45,7 @@ export default function SplashScreen({
       clearTimeout(t2);
       clearTimeout(t3);
     };
-  }, []);
+  }, [handleDismiss]);
 
   if (!isVisible) return null;
 

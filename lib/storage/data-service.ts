@@ -11,10 +11,8 @@ import type {
   ApprovedFact,
   ReviewComment,
   ReviewEvent,
-  GovDocument,
-  DocumentVersion,
 } from "@/lib/engine/types";
-import { DEMO_RULES, DEMO_FACTS, DEMO_DRAFTS } from "./demo-data";
+import { DEMO_RULES, DEMO_FACTS } from "./demo-data";
 import { createClient } from "@/lib/supabase/client";
 
 const STORAGE_KEYS = {

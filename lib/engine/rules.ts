@@ -4,7 +4,7 @@
  * Zero external dependencies — runs entirely client-side with guaranteed sub-100ms execution.
  */
 
-import type { BrandRule, Finding, FindingCategory, Severity } from "./types";
+import type { BrandRule, Finding } from "./types";
 
 let findingCounter = 0;
 

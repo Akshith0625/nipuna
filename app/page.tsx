@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import { Edit3, Lock, FileText, Search, GitPullRequest } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
 import DraftWorkspace from "@/components/editor/draft-workspace";
@@ -71,12 +71,12 @@ export default function Home() {
 
   // Initialize from storage on client mount
   useEffect(() => {
-    // Check if splash has been shown this session
+    let splashTimer: NodeJS.Timeout | null = null;
     try {
       const hasSeenSplash = sessionStorage.getItem("nipuna_splash_seen");
       if (!hasSeenSplash) {
-        setShowSplash(true);
         sessionStorage.setItem("nipuna_splash_seen", "1");
+        splashTimer = setTimeout(() => setShowSplash(true), 0);
       }
     } catch {
       // Ignore in strict privacy modes
@@ -86,17 +86,23 @@ export default function Home() {
     const loadedComments = getStoredComments();
     const loadedEvents = getStoredEvents();
 
-    setRules(loadedRules);
-    setFacts(loadedFacts);
-    setComments(loadedComments);
-    setEvents(loadedEvents);
-    setIsInitialized(true);
+    startTransition(() => {
+      setRules(loadedRules);
+      setFacts(loadedFacts);
+      setComments(loadedComments);
+      setEvents(loadedEvents);
+      setIsInitialized(true);
 
-    // Run initial scan on first load
-    const result = scanDraft(DEMO_DRAFTS[0].content, loadedRules, loadedFacts);
-    setFindings(result.findings);
-    setFindingsHistory(result.findings);
-    setScanDurationMs(result.durationMs);
+      // Run initial scan on first load
+      const result = scanDraft(DEMO_DRAFTS[0].content, loadedRules, loadedFacts);
+      setFindings(result.findings);
+      setFindingsHistory(result.findings);
+      setScanDurationMs(result.durationMs);
+    });
+
+    return () => {
+      if (splashTimer) clearTimeout(splashTimer);
+    };
   }, []);
 
   /* ---------- Run Governance Check ---------- */
@@ -214,8 +220,9 @@ export default function Home() {
 
     setFindings(updatedFindings);
 
-    const { [findingId]: _removed, ...rest } = acceptedFixMap;
-    setAcceptedFixMap(rest);
+    const nextMap = { ...acceptedFixMap };
+    delete nextMap[findingId];
+    setAcceptedFixMap(nextMap);
   }
 
   /* ---------- Dismiss Finding with Rationale ---------- */
