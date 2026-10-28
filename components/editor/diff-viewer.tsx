@@ -36,7 +36,7 @@ export default function DiffViewer({ originalText, revisedText }: DiffViewerProp
 
   if (originalText === revisedText) {
     return (
-      <div className="flex items-center justify-center h-full text-[13px] text-text-muted">
+      <div className="flex items-center justify-center h-full text-body-sm text-mute">
         No changes have been made to this version yet.
       </div>
     );
@@ -45,32 +45,32 @@ export default function DiffViewer({ originalText, revisedText }: DiffViewerProp
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border-subtle px-4 py-2 bg-surface">
-        <h3 className="text-[13px] font-semibold text-text-primary">
+      <div className="flex items-center justify-between border-b border-hairline px-5 py-2 bg-canvas">
+        <h3 className="text-body-sm-strong text-ink">
           Version Diff
         </h3>
-        <div className="flex items-center gap-2 text-[11px] tabular-nums">
-          <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+        <div className="flex items-center gap-3 text-caption-mono tabular-nums">
+          <span className="text-[#0070f3] dark:text-[#3291ff] font-medium">
             +{addedCount} added
           </span>
-          <span className="text-rose-600 dark:text-rose-400 font-medium">
+          <span className="text-[#ee0000] dark:text-[#ff6666] font-medium">
             −{removedCount} removed
           </span>
         </div>
       </div>
 
       {/* Diff content */}
-      <div className="flex-1 overflow-y-auto p-4 font-mono text-[13px] leading-6">
+      <div className="flex-1 overflow-y-auto p-5 font-mono text-code leading-6">
         {diffLines.map((line, i) => (
           <div
             key={i}
             className={cn(
-              "px-3 py-0.5 rounded-sm",
+              "px-3 py-0.5 rounded-[4px]",
               line.type === "added" && "diff-add",
               line.type === "removed" && "diff-remove"
             )}
           >
-            <span className="inline-block w-5 text-right mr-3 text-text-muted select-none text-[11px]">
+            <span className="inline-block w-5 text-right mr-3 text-mute select-none text-[11px]">
               {line.type === "removed" ? "−" : line.type === "added" ? "+" : " "}
             </span>
             {line.text || "\u00A0"}

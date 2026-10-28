@@ -30,9 +30,9 @@ const CATEGORY_LABELS: Record<FindingCategory, string> = {
 };
 
 const SEVERITY_BADGES: Record<Severity, string> = {
-  high: "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border-rose-200 dark:border-rose-900/50",
-  medium: "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-900/50",
-  low: "bg-stone-100 text-stone-700 dark:bg-stone-800 dark:text-stone-300 border-stone-200 dark:border-stone-700",
+  high: "bg-[#f7d4d6] text-[#c50000] dark:bg-[rgba(238,0,0,0.12)] dark:text-[#ff6666] border-[#f7d4d6] dark:border-[rgba(238,0,0,0.2)]",
+  medium: "bg-[#ffefcf] text-[#ab570a] dark:bg-[rgba(245,166,35,0.12)] dark:text-[#f5a623] border-[#ffefcf] dark:border-[rgba(245,166,35,0.2)]",
+  low: "bg-[#d3e5ff] text-[#0761d1] dark:bg-[rgba(0,112,243,0.12)] dark:text-[#3291ff] border-[#d3e5ff] dark:border-[rgba(0,112,243,0.2)]",
 };
 
 export default function BrandKitManager({
@@ -100,7 +100,7 @@ export default function BrandKitManager({
     return matchesSearch;
   });
 
-  /* ---------- Rule Handlers ---------- */
+  // Handlers for Rule Modals
   function openAddRule() {
     setEditingRuleId(null);
     setRuleName("");
@@ -129,9 +129,9 @@ export default function BrandKitManager({
     e.preventDefault();
     if (!ruleName.trim()) return;
 
-    const prohibitedArray = ruleProhibited
+    const prohibitedList = ruleProhibited
       .split(",")
-      .map((s) => s.trim())
+      .map((s) => s.trim().toLowerCase())
       .filter(Boolean);
 
     if (editingRuleId) {
@@ -142,10 +142,10 @@ export default function BrandKitManager({
         name: ruleName.trim(),
         category: ruleCategory,
         severity: ruleSeverity,
-        prohibitedForms: prohibitedArray,
+        prohibitedForms: prohibitedList,
         replacement: ruleReplacement.trim() || undefined,
         rationale: ruleRationale.trim(),
-        description: ruleDesc.trim(),
+        description: ruleDesc.trim() || ruleName.trim(),
         version: existing.version + 1,
       });
     } else {
@@ -158,25 +158,26 @@ export default function BrandKitManager({
           ? "TG"
           : "P";
       const newId = `${prefix}-0${rules.length + 1}`;
+
       onAddRule({
         id: newId,
-        category: ruleCategory,
         name: ruleName.trim(),
-        description: ruleDesc.trim(),
-        pattern: ruleReplacement.trim() || ruleName.trim(),
-        prohibitedForms: prohibitedArray,
-        replacement: ruleReplacement.trim() || undefined,
+        category: ruleCategory,
         severity: ruleSeverity,
+        pattern: prohibitedList.join("|"),
+        prohibitedForms: prohibitedList,
+        replacement: ruleReplacement.trim() || undefined,
+        rationale: ruleRationale.trim(),
+        description: ruleDesc.trim() || ruleName.trim(),
         version: 1,
         active: true,
-        rationale: ruleRationale.trim(),
       });
     }
 
     setIsAddingRule(false);
   }
 
-  /* ---------- Fact Handlers ---------- */
+  // Handlers for Fact Modals
   function openAddFact() {
     setEditingFactId(null);
     setFactStatement("");
@@ -210,9 +211,9 @@ export default function BrandKitManager({
         ...existing,
         statement: factStatement.trim(),
         value: factValue.trim(),
-        entity: factEntity.trim() || "general_assertion",
+        entity: factEntity.trim() || "general",
         owner: factOwner.trim(),
-        sourceReference: factSource.trim() || "Approved Documentation",
+        sourceReference: factSource.trim() || "Internal Documentation",
         validFrom: factValidFrom,
       });
     } else {
@@ -221,9 +222,9 @@ export default function BrandKitManager({
         id: newId,
         statement: factStatement.trim(),
         value: factValue.trim(),
-        entity: factEntity.trim() || "general_assertion",
+        entity: factEntity.trim() || "general",
         owner: factOwner.trim(),
-        sourceReference: factSource.trim() || "Approved Documentation",
+        sourceReference: factSource.trim() || "Internal Documentation",
         validFrom: factValidFrom,
         status: "active",
       });
@@ -232,44 +233,36 @@ export default function BrandKitManager({
     setIsAddingFact(false);
   }
 
-  /* ---------- Export / Import ---------- */
   function handleExportJson() {
-    const data = {
-      brandName: "Inkloom Corp",
-      exportedAt: new Date().toISOString(),
-      rules,
-      facts,
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
-    });
+    const data = JSON.stringify({ rules, facts }, null, 2);
+    const blob = new Blob([data], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `brand-kit-${new Date().toISOString().split("T")[0]}.json`;
+    a.download = "nipuna-brand-governance-kit.json";
     a.click();
     URL.revokeObjectURL(url);
   }
 
   return (
-    <div className="flex flex-col flex-1 h-full overflow-y-auto bg-surface">
+    <div className="flex flex-col flex-1 h-full overflow-y-auto bg-canvas-soft">
       {/* Top Banner & Header */}
-      <div className="border-b border-border-subtle p-6 bg-surface-raised/40">
+      <div className="border-b border-hairline p-6 bg-canvas">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 max-w-6xl mx-auto w-full">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-semibold">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-caption-mono uppercase tracking-wider px-2 py-0.5 rounded-[4px] bg-canvas-soft-2 text-ink border border-hairline font-semibold">
                 Single Source of Truth
               </span>
-              <span className="text-text-muted text-[13px]">·</span>
-              <span className="text-[13px] text-text-secondary">
+              <span className="text-hairline-strong text-caption">·</span>
+              <span className="text-caption text-mute">
                 Inkloom Corp Brand Kit
               </span>
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-text-primary">
+            <h1 className="text-display-sm text-ink">
               Brand Governance Kit & Facts Registry
             </h1>
-            <p className="text-[13px] text-text-secondary mt-1 max-w-2xl">
+            <p className="text-body-sm text-body mt-1 max-w-2xl">
               Configure deterministic terminology rules, claim boundaries, and verified organizational facts. Every check run by Nipuna strictly adheres to these definitions.
             </p>
           </div>
@@ -277,14 +270,14 @@ export default function BrandKitManager({
           <div className="flex items-center gap-2">
             <button
               onClick={handleExportJson}
-              className="px-3 py-1.5 text-[12px] font-medium border border-border-default rounded-md bg-surface hover:bg-surface-raised text-text-secondary transition-base"
+              className="btn-pill btn-pill-secondary text-caption !h-auto py-1.5 px-3"
               title="Download full kit as JSON"
             >
               Export JSON
             </button>
             <button
               onClick={onResetToDemo}
-              className="px-3 py-1.5 text-[12px] font-medium border border-border-default rounded-md bg-surface hover:bg-surface-raised text-text-muted hover:text-text-primary transition-base"
+              className="btn-pill btn-pill-secondary text-caption !h-auto py-1.5 px-3 text-mute hover:text-ink"
               title="Reset rules and facts back to initial benchmark kit"
             >
               Reset to Benchmark
@@ -296,19 +289,19 @@ export default function BrandKitManager({
       {/* Main Container */}
       <div className="max-w-6xl mx-auto w-full p-6 space-y-6">
         {/* Navigation & Actions */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-subtle pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-hairline pb-4">
           {/* Sub-tabs */}
-          <div className="flex items-center gap-1 bg-surface-raised p-1 rounded-lg border border-border-subtle">
+          <div className="flex items-center gap-1 bg-canvas-soft-2 p-1 rounded-[64px] border border-hairline">
             <button
               onClick={() => {
                 setActiveSubTab("rules");
                 setCategoryFilter("all");
               }}
               className={cn(
-                "px-3.5 py-1.5 text-[13px] font-medium rounded-md transition-base",
+                "px-4 py-1 text-caption font-medium rounded-[64px] transition-base",
                 activeSubTab === "rules"
-                  ? "bg-surface shadow-xs text-text-primary font-semibold"
-                  : "text-text-secondary hover:text-text-primary"
+                  ? "bg-canvas shadow-xs text-ink font-semibold"
+                  : "text-mute hover:text-body"
               )}
             >
               Brand Rules ({rules.length})
@@ -319,10 +312,10 @@ export default function BrandKitManager({
                 setCategoryFilter("all");
               }}
               className={cn(
-                "px-3.5 py-1.5 text-[13px] font-medium rounded-md transition-base",
+                "px-4 py-1 text-caption font-medium rounded-[64px] transition-base",
                 activeSubTab === "facts"
-                  ? "bg-surface shadow-xs text-text-primary font-semibold"
-                  : "text-text-secondary hover:text-text-primary"
+                  ? "bg-canvas shadow-xs text-ink font-semibold"
+                  : "text-mute hover:text-body"
               )}
             >
               Approved Facts Registry ({facts.length})
@@ -340,13 +333,13 @@ export default function BrandKitManager({
                   ? "Search rules, terms, IDs..."
                   : "Search facts, values, sources..."
               }
-              className="px-3 py-1.5 text-[13px] border border-border-default rounded-md bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent w-56"
+              className="px-3 py-1.5 text-caption border border-hairline rounded-[6px] bg-canvas text-ink placeholder:text-mute focus:outline-none focus:ring-1 focus:ring-link w-56"
             />
 
             {canEdit && (
               <button
                 onClick={activeSubTab === "rules" ? openAddRule : openAddFact}
-                className="px-3 py-1.5 text-[13px] font-medium rounded-md bg-accent text-white dark:text-background hover:bg-accent-hover transition-base flex items-center gap-1.5 shrink-0"
+                className="btn-pill btn-pill-primary text-caption !h-auto py-1.5 px-3 flex items-center gap-1.5 shrink-0"
               >
                 <span>+</span>
                 <span>{activeSubTab === "rules" ? "Add Rule" : "Add Fact"}</span>
@@ -357,14 +350,14 @@ export default function BrandKitManager({
 
         {/* Category Pills (for Rules) */}
         {activeSubTab === "rules" && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-[12px]">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-caption">
             <button
               onClick={() => setCategoryFilter("all")}
               className={cn(
-                "px-2.5 py-1 rounded-full border transition-base font-medium",
+                "px-3 py-1 rounded-[100px] border transition-base font-medium",
                 categoryFilter === "all"
-                  ? "bg-accent text-white dark:text-background border-accent"
-                  : "border-border-default text-text-secondary hover:bg-surface-raised"
+                  ? "bg-accent text-on-primary border-accent"
+                  : "border-hairline text-body hover:bg-canvas-soft-2"
               )}
             >
               All Categories ({rules.length})
@@ -377,10 +370,10 @@ export default function BrandKitManager({
                     key={cat}
                     onClick={() => setCategoryFilter(cat)}
                     className={cn(
-                      "px-2.5 py-1 rounded-full border transition-base font-medium",
+                      "px-3 py-1 rounded-[100px] border transition-base font-medium",
                       categoryFilter === cat
-                        ? "bg-accent text-white dark:text-background border-accent"
-                        : "border-border-default text-text-secondary hover:bg-surface-raised"
+                        ? "bg-accent text-on-primary border-accent"
+                        : "border-hairline text-body hover:bg-canvas-soft-2"
                     )}
                   >
                     {CATEGORY_LABELS[cat]} ({count})
@@ -395,7 +388,7 @@ export default function BrandKitManager({
         {activeSubTab === "rules" && (
           <div className="space-y-3">
             {filteredRules.length === 0 ? (
-              <div className="py-12 text-center text-text-muted text-[13px]">
+              <div className="py-12 text-center text-mute text-body-sm">
                 No brand rules found matching your filter.
               </div>
             ) : (
@@ -403,57 +396,57 @@ export default function BrandKitManager({
                 <div
                   key={rule.id}
                   className={cn(
-                    "p-4 rounded-lg border bg-surface transition-base",
+                    "p-4 rounded-[8px] border bg-canvas transition-base shadow-xs",
                     rule.active
-                      ? "border-border-subtle hover:border-border-default"
-                      : "border-border-subtle opacity-60 bg-surface-raised/40"
+                      ? "border-hairline hover:border-hairline-strong"
+                      : "border-hairline opacity-60 bg-canvas-soft-2"
                   )}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1.5 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-surface-raised text-text-primary border border-border-subtle">
+                        <span className="font-mono text-code font-bold px-1.5 py-0.5 rounded-[4px] bg-canvas-soft-2 text-ink border border-hairline">
                           {rule.id}
                         </span>
-                        <span className="text-[13px] font-semibold text-text-primary">
+                        <span className="text-body-sm-strong text-ink">
                           {rule.name}
                         </span>
                         <span
                           className={cn(
-                            "text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border",
+                            "text-[10px] uppercase font-bold font-mono px-1.5 py-0.5 rounded-[4px] border",
                             SEVERITY_BADGES[rule.severity]
                           )}
                         >
                           {rule.severity}
                         </span>
-                        <span className="text-[11px] text-text-muted">
+                        <span className="text-caption-mono text-mute">
                           v{rule.version}
                         </span>
-                        <span className="text-text-muted text-[11px]">·</span>
-                        <span className="text-[11px] font-medium text-text-secondary">
+                        <span className="text-hairline-strong text-caption">·</span>
+                        <span className="text-caption font-medium text-body">
                           {CATEGORY_LABELS[rule.category]}
                         </span>
                         {!rule.active && (
-                          <span className="text-[10px] uppercase px-1.5 py-0.5 rounded bg-stone-200 dark:bg-stone-800 text-text-muted font-bold">
+                          <span className="text-[10px] uppercase px-1.5 py-0.5 rounded-[4px] bg-canvas-soft-2 text-mute font-bold">
                             Disabled
                           </span>
                         )}
                       </div>
 
-                      <p className="text-[13px] text-text-secondary">
+                      <p className="text-caption text-body">
                         {rule.description}
                       </p>
 
                       {/* Prohibited & Replacement */}
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] pt-1">
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-caption pt-1">
                         {rule.prohibitedForms.length > 0 && (
                           <div className="flex items-center gap-1.5">
-                            <span className="text-text-muted">Prohibited:</span>
+                            <span className="text-mute">Prohibited:</span>
                             <div className="flex flex-wrap gap-1">
                               {rule.prohibitedForms.map((p, i) => (
                                 <code
                                   key={i}
-                                  className="px-1.5 py-0.2 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/50 text-[11px] font-mono"
+                                  className="px-1.5 py-0.2 rounded-[4px] bg-[#f7d4d6] text-[#c50000] dark:bg-[rgba(238,0,0,0.12)] dark:text-[#ff6666] border border-hairline text-code"
                                 >
                                   {p}
                                 </code>
@@ -464,8 +457,8 @@ export default function BrandKitManager({
 
                         {rule.replacement && (
                           <div className="flex items-center gap-1.5">
-                            <span className="text-text-muted">Approved Fix:</span>
-                            <code className="px-1.5 py-0.2 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50 text-[11px] font-mono font-medium">
+                            <span className="text-mute">Approved Fix:</span>
+                            <code className="px-1.5 py-0.2 rounded-[4px] bg-[#dcfce7] text-[#166534] dark:bg-[rgba(22,101,52,0.2)] dark:text-[#86efac] border border-hairline text-code font-medium">
                               {rule.replacement}
                             </code>
                           </div>
@@ -473,7 +466,7 @@ export default function BrandKitManager({
                       </div>
 
                       {rule.rationale && (
-                        <p className="text-[11px] text-text-muted italic pt-0.5">
+                        <p className="text-caption text-mute italic pt-0.5">
                           Rationale: {rule.rationale}
                         </p>
                       )}
@@ -491,23 +484,23 @@ export default function BrandKitManager({
                             })
                           }
                           className={cn(
-                            "px-2.5 py-1 text-[11px] font-medium rounded border transition-base",
+                            "px-2.5 py-1 text-caption font-medium rounded-[100px] border transition-base",
                             rule.active
-                              ? "border-border-default text-text-secondary hover:bg-surface-raised"
-                              : "border-emerald-300 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50"
+                              ? "border-hairline text-body hover:bg-canvas-soft-2"
+                              : "border-[#0070f3] text-[#0070f3] dark:text-[#3291ff] hover:bg-[#d3e5ff]/20"
                           )}
                         >
                           {rule.active ? "Disable" : "Enable"}
                         </button>
                         <button
                           onClick={() => openEditRule(rule)}
-                          className="px-2.5 py-1 text-[11px] font-medium rounded border border-border-default hover:bg-surface-raised text-text-secondary transition-base"
+                          className="px-2.5 py-1 text-caption font-medium rounded-[100px] border border-hairline hover:bg-canvas-soft-2 text-body transition-base"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => onDeleteRule(rule.id)}
-                          className="px-2.5 py-1 text-[11px] font-medium rounded border border-rose-200 text-rose-600 dark:text-rose-400 hover:bg-rose-50 transition-base"
+                          className="px-2.5 py-1 text-caption font-medium rounded-[100px] border border-hairline text-[#ee0000] dark:text-[#ff6666] hover:bg-[#f7d4d6]/20 transition-base"
                         >
                           Delete
                         </button>
@@ -523,53 +516,53 @@ export default function BrandKitManager({
         {/* ================= FACTS REGISTRY ================= */}
         {activeSubTab === "facts" && (
           <div className="space-y-3">
-            <div className="p-3 bg-stone-50 dark:bg-stone-900 border border-border-subtle rounded-md text-[12px] text-text-secondary">
-              <strong>Ground Truth Integrity:</strong> Every claim verified by the Fact Engine is resolved against this registry. Any assertion contradicting these records produces a <code className="text-rose-600 font-mono">conflict</code> verdict; unbacked claims produce a <code className="text-amber-600 font-mono">not_verified</code> verdict.
+            <div className="p-3 bg-canvas border border-hairline rounded-[8px] text-caption text-body shadow-xs">
+              <strong>Ground Truth Integrity:</strong> Every claim verified by the Fact Engine is resolved against this registry. Any assertion contradicting these records produces a <code className="text-[#ee0000] font-mono font-bold">conflict</code> verdict; unbacked claims produce a <code className="text-[#ab570a] font-mono font-bold">not_verified</code> verdict.
             </div>
 
             {filteredFacts.length === 0 ? (
-              <div className="py-12 text-center text-text-muted text-[13px]">
+              <div className="py-12 text-center text-mute text-body-sm">
                 No approved facts found matching your query.
               </div>
             ) : (
               filteredFacts.map((fact) => (
                 <div
                   key={fact.id}
-                  className="p-4 rounded-lg border border-border-subtle bg-surface hover:border-border-default transition-base space-y-2"
+                  className="p-4 rounded-[8px] border border-hairline bg-canvas hover:border-hairline-strong transition-base space-y-2 shadow-xs"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50">
+                        <span className="font-mono text-code font-bold px-1.5 py-0.5 rounded-[4px] bg-[#dcfce7] text-[#166534] dark:bg-[rgba(22,101,52,0.2)] dark:text-[#86efac] border border-hairline">
                           {fact.id}
                         </span>
-                        <span className="text-[13px] font-semibold text-text-primary">
+                        <span className="text-body-sm-strong text-ink">
                           {fact.statement}
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[12px] pt-1">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-caption pt-1">
                         <div>
-                          <span className="text-text-muted block text-[10px] uppercase font-bold">
+                          <span className="text-mute block text-[10px] uppercase font-mono">
                             Exact Value / Entity
                           </span>
-                          <span className="font-mono text-[12px] text-text-primary font-medium">
+                          <span className="font-mono text-caption text-ink font-medium">
                             {fact.value} ({fact.entity})
                           </span>
                         </div>
                         <div>
-                          <span className="text-text-muted block text-[10px] uppercase font-bold">
+                          <span className="text-mute block text-[10px] uppercase font-mono">
                             Verified Source Reference
                           </span>
-                          <span className="text-[12px] text-text-secondary truncate block">
+                          <span className="text-caption text-body truncate block">
                             {fact.sourceReference}
                           </span>
                         </div>
                         <div>
-                          <span className="text-text-muted block text-[10px] uppercase font-bold">
+                          <span className="text-mute block text-[10px] uppercase font-mono">
                             Owner / Validity
                           </span>
-                          <span className="text-[12px] text-text-secondary">
+                          <span className="text-caption text-body">
                             {fact.owner} · Valid from {fact.validFrom}
                           </span>
                         </div>
@@ -580,13 +573,13 @@ export default function BrandKitManager({
                       <div className="flex items-center gap-2 shrink-0">
                         <button
                           onClick={() => openEditFact(fact)}
-                          className="px-2.5 py-1 text-[11px] font-medium rounded border border-border-default hover:bg-surface-raised text-text-secondary transition-base"
+                          className="px-2.5 py-1 text-caption font-medium rounded-[100px] border border-hairline hover:bg-canvas-soft-2 text-body transition-base"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => onDeleteFact(fact.id)}
-                          className="px-2.5 py-1 text-[11px] font-medium rounded border border-rose-200 text-rose-600 dark:text-rose-400 hover:bg-rose-50 transition-base"
+                          className="px-2.5 py-1 text-caption font-medium rounded-[100px] border border-hairline text-[#ee0000] dark:text-[#ff6666] hover:bg-[#f7d4d6]/20 transition-base"
                         >
                           Delete
                         </button>
@@ -602,23 +595,23 @@ export default function BrandKitManager({
 
       {/* ================= MODAL: ADD / EDIT RULE ================= */}
       {isAddingRule && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-surface border border-border-default rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-border-subtle pb-3">
-              <h2 className="text-[15px] font-bold text-text-primary">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="bg-canvas border border-hairline rounded-[12px] shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-hairline pb-3">
+              <h2 className="text-body-sm-strong text-ink">
                 {editingRuleId ? `Edit Rule ${editingRuleId}` : "Create Brand Rule"}
               </h2>
               <button
                 onClick={() => setIsAddingRule(false)}
-                className="text-text-muted hover:text-text-primary text-[14px]"
+                className="text-mute hover:text-ink text-[14px]"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleSaveRule} className="space-y-4 text-[13px]">
+            <form onSubmit={handleSaveRule} className="space-y-4 text-caption">
               <div>
-                <label className="block text-[12px] font-semibold text-text-secondary mb-1">
+                <label className="block text-caption font-semibold text-body mb-1">
                   Rule Name *
                 </label>
                 <input
@@ -627,13 +620,13 @@ export default function BrandKitManager({
                   value={ruleName}
                   onChange={(e) => setRuleName(e.target.value)}
                   placeholder="e.g. Prohibited competitor comparison"
-                  className="w-full px-3 py-1.5 border border-border-default rounded-md bg-surface text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="w-full px-3 py-1.5 border border-hairline rounded-[6px] bg-canvas text-ink focus:outline-none focus:ring-1 focus:ring-link"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[12px] font-semibold text-text-secondary mb-1">
+                  <label className="block text-caption font-semibold text-body mb-1">
                     Category
                   </label>
                   <select
@@ -641,7 +634,7 @@ export default function BrandKitManager({
                     onChange={(e) =>
                       setRuleCategory(e.target.value as FindingCategory)
                     }
-                    className="w-full px-3 py-1.5 border border-border-default rounded-md bg-surface text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+                    className="w-full px-3 py-1.5 border border-hairline rounded-[6px] bg-canvas text-ink focus:outline-none focus:ring-1 focus:ring-link"
                   >
                     <option value="terminology">Terminology</option>
                     <option value="claim">Claim / Superlative</option>
@@ -651,13 +644,13 @@ export default function BrandKitManager({
                 </div>
 
                 <div>
-                  <label className="block text-[12px] font-semibold text-text-secondary mb-1">
+                  <label className="block text-caption font-semibold text-body mb-1">
                     Severity
                   </label>
                   <select
                     value={ruleSeverity}
                     onChange={(e) => setRuleSeverity(e.target.value as Severity)}
-                    className="w-full px-3 py-1.5 border border-border-default rounded-md bg-surface text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+                    className="w-full px-3 py-1.5 border border-hairline rounded-[6px] bg-canvas text-ink focus:outline-none focus:ring-1 focus:ring-link"
                   >
                     <option value="high">High (Blocker)</option>
                     <option value="medium">Medium (Warning)</option>
@@ -667,7 +660,7 @@ export default function BrandKitManager({
               </div>
 
               <div>
-                <label className="block text-[12px] font-semibold text-text-secondary mb-1">
+                <label className="block text-caption font-semibold text-body mb-1">
                   Prohibited Forms (comma-separated)
                 </label>
                 <input
@@ -675,15 +668,15 @@ export default function BrandKitManager({
                   value={ruleProhibited}
                   onChange={(e) => setRuleProhibited(e.target.value)}
                   placeholder="e.g. utilize, utilizes, utilization"
-                  className="w-full px-3 py-1.5 border border-border-default rounded-md bg-surface text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="w-full px-3 py-1.5 border border-hairline rounded-[6px] bg-canvas text-ink focus:outline-none focus:ring-1 focus:ring-link"
                 />
-                <span className="text-[11px] text-text-muted mt-0.5 block">
+                <span className="text-[11px] text-mute mt-0.5 block">
                   The engine matches each term with word-boundary and inflection awareness.
                 </span>
               </div>
 
               <div>
-                <label className="block text-[12px] font-semibold text-text-secondary mb-1">
+                <label className="block text-caption font-semibold text-body mb-1">
                   Intent-Preserving Approved Replacement
                 </label>
                 <input
@@ -691,12 +684,12 @@ export default function BrandKitManager({
                   value={ruleReplacement}
                   onChange={(e) => setRuleReplacement(e.target.value)}
                   placeholder="e.g. use"
-                  className="w-full px-3 py-1.5 border border-border-default rounded-md bg-surface text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="w-full px-3 py-1.5 border border-hairline rounded-[6px] bg-canvas text-ink focus:outline-none focus:ring-1 focus:ring-link"
                 />
               </div>
 
               <div>
-                <label className="block text-[12px] font-semibold text-text-secondary mb-1">
+                <label className="block text-caption font-semibold text-body mb-1">
                   Description & Guidance
                 </label>
                 <textarea
@@ -704,12 +697,12 @@ export default function BrandKitManager({
                   value={ruleDesc}
                   onChange={(e) => setRuleDesc(e.target.value)}
                   placeholder="Explain why this rule exists..."
-                  className="w-full px-3 py-1.5 border border-border-default rounded-md bg-surface text-text-primary focus:outline-none focus:ring-1 focus:ring-accent resize-none"
+                  className="w-full px-3 py-1.5 border border-hairline rounded-[6px] bg-canvas text-ink focus:outline-none focus:ring-1 focus:ring-link resize-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[12px] font-semibold text-text-secondary mb-1">
+                <label className="block text-caption font-semibold text-body mb-1">
                   Official Rationale
                 </label>
                 <input
@@ -717,21 +710,21 @@ export default function BrandKitManager({
                   value={ruleRationale}
                   onChange={(e) => setRuleRationale(e.target.value)}
                   placeholder="e.g. Brand voice guidelines mandate plain language"
-                  className="w-full px-3 py-1.5 border border-border-default rounded-md bg-surface text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="w-full px-3 py-1.5 border border-hairline rounded-[6px] bg-canvas text-ink focus:outline-none focus:ring-1 focus:ring-link"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-border-subtle">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-hairline">
                 <button
                   type="button"
                   onClick={() => setIsAddingRule(false)}
-                  className="px-3 py-1.5 text-[13px] font-medium border border-border-default rounded-md hover:bg-surface-raised text-text-secondary transition-base"
+                  className="btn-pill btn-pill-secondary text-caption !h-auto py-1.5 px-3"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 text-[13px] font-medium bg-accent text-white dark:text-background rounded-md hover:bg-accent-hover transition-base"
+                  className="btn-pill btn-pill-primary text-caption !h-auto py-1.5 px-4"
                 >
                   {editingRuleId ? "Save Changes" : "Create Rule"}
                 </button>
@@ -743,23 +736,23 @@ export default function BrandKitManager({
 
       {/* ================= MODAL: ADD / EDIT FACT ================= */}
       {isAddingFact && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-surface border border-border-default rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-border-subtle pb-3">
-              <h2 className="text-[15px] font-bold text-text-primary">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="bg-canvas border border-hairline rounded-[12px] shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-hairline pb-3">
+              <h2 className="text-body-sm-strong text-ink">
                 {editingFactId ? `Edit Fact ${editingFactId}` : "Add Approved Fact"}
               </h2>
               <button
                 onClick={() => setIsAddingFact(false)}
-                className="text-text-muted hover:text-text-primary text-[14px]"
+                className="text-mute hover:text-ink text-[14px]"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleSaveFact} className="space-y-4 text-[13px]">
+            <form onSubmit={handleSaveFact} className="space-y-4 text-caption">
               <div>
-                <label className="block text-[12px] font-semibold text-text-secondary mb-1">
+                <label className="block text-caption font-semibold text-body mb-1">
                   Fact Statement *
                 </label>
                 <textarea
@@ -768,13 +761,13 @@ export default function BrandKitManager({
                   value={factStatement}
                   onChange={(e) => setFactStatement(e.target.value)}
                   placeholder="e.g. Inkloom serves 500+ enterprise clients across 12 countries."
-                  className="w-full px-3 py-1.5 border border-border-default rounded-md bg-surface text-text-primary focus:outline-none focus:ring-1 focus:ring-accent resize-none"
+                  className="w-full px-3 py-1.5 border border-hairline rounded-[6px] bg-canvas text-ink focus:outline-none focus:ring-1 focus:ring-link resize-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[12px] font-semibold text-text-secondary mb-1">
+                  <label className="block text-caption font-semibold text-body mb-1">
                     Exact Value *
                   </label>
                   <input
@@ -783,12 +776,12 @@ export default function BrandKitManager({
                     value={factValue}
                     onChange={(e) => setFactValue(e.target.value)}
                     placeholder="e.g. 500+"
-                    className="w-full px-3 py-1.5 border border-border-default rounded-md bg-surface text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+                    className="w-full px-3 py-1.5 border border-hairline rounded-[6px] bg-canvas text-ink focus:outline-none focus:ring-1 focus:ring-link"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[12px] font-semibold text-text-secondary mb-1">
+                  <label className="block text-caption font-semibold text-body mb-1">
                     Entity / Dimension
                   </label>
                   <input
@@ -796,14 +789,14 @@ export default function BrandKitManager({
                     value={factEntity}
                     onChange={(e) => setFactEntity(e.target.value)}
                     placeholder="e.g. client_count"
-                    className="w-full px-3 py-1.5 border border-border-default rounded-md bg-surface text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+                    className="w-full px-3 py-1.5 border border-hairline rounded-[6px] bg-canvas text-ink focus:outline-none focus:ring-1 focus:ring-link"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[12px] font-semibold text-text-secondary mb-1">
+                  <label className="block text-caption font-semibold text-body mb-1">
                     Department Owner
                   </label>
                   <input
@@ -811,25 +804,25 @@ export default function BrandKitManager({
                     value={factOwner}
                     onChange={(e) => setFactOwner(e.target.value)}
                     placeholder="e.g. Sales, Legal, Finance"
-                    className="w-full px-3 py-1.5 border border-border-default rounded-md bg-surface text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+                    className="w-full px-3 py-1.5 border border-hairline rounded-[6px] bg-canvas text-ink focus:outline-none focus:ring-1 focus:ring-link"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[12px] font-semibold text-text-secondary mb-1">
+                  <label className="block text-caption font-semibold text-body mb-1">
                     Valid From
                   </label>
                   <input
                     type="date"
                     value={factValidFrom}
                     onChange={(e) => setFactValidFrom(e.target.value)}
-                    className="w-full px-3 py-1.5 border border-border-default rounded-md bg-surface text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+                    className="w-full px-3 py-1.5 border border-hairline rounded-[6px] bg-canvas text-ink focus:outline-none focus:ring-1 focus:ring-link"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[12px] font-semibold text-text-secondary mb-1">
+                <label className="block text-caption font-semibold text-body mb-1">
                   Source Reference / Citation
                 </label>
                 <input
@@ -837,24 +830,24 @@ export default function BrandKitManager({
                   value={factSource}
                   onChange={(e) => setFactSource(e.target.value)}
                   placeholder="e.g. CRM Report Q3 2024, MCA Certificate Filing"
-                  className="w-full px-3 py-1.5 border border-border-default rounded-md bg-surface text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="w-full px-3 py-1.5 border border-hairline rounded-[6px] bg-canvas text-ink focus:outline-none focus:ring-1 focus:ring-link"
                 />
-                <span className="text-[11px] text-text-muted mt-0.5 block">
+                <span className="text-[11px] text-mute mt-0.5 block">
                   This reference will be cited verbatim whenever findings reference this fact.
                 </span>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-border-subtle">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-hairline">
                 <button
                   type="button"
                   onClick={() => setIsAddingFact(false)}
-                  className="px-3 py-1.5 text-[13px] font-medium border border-border-default rounded-md hover:bg-surface-raised text-text-secondary transition-base"
+                  className="btn-pill btn-pill-secondary text-caption !h-auto py-1.5 px-3"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 text-[13px] font-medium bg-accent text-white dark:text-background rounded-md hover:bg-accent-hover transition-base"
+                  className="btn-pill btn-pill-primary text-caption !h-auto py-1.5 px-4"
                 >
                   {editingFactId ? "Save Changes" : "Add Fact"}
                 </button>

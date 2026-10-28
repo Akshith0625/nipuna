@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/navbar";
 import DraftWorkspace from "@/components/editor/draft-workspace";
 import FindingsPanel from "@/components/editor/findings-panel";
@@ -397,14 +397,19 @@ export default function Home() {
 
   if (!isInitialized) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background text-text-muted text-[13px]">
-        Loading Nipuna Brand Governance Workspace…
+      <div className="flex h-screen items-center justify-center bg-canvas-soft">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-5 w-5 rounded-full border-2 border-ink border-t-transparent animate-spin" />
+          <span className="text-body-sm text-mute">
+            Loading Nipuna Brand Governance Workspace…
+          </span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-background">
+    <div className="flex flex-col h-screen overflow-hidden bg-canvas-soft">
       {/* Top Navigation */}
       <Navbar
         brandName="Inkloom Corp"
@@ -418,29 +423,29 @@ export default function Home() {
       {activeTab === "review" && (
         <div className="flex flex-col flex-1 overflow-hidden">
           {/* Subheader / Document Status Toolbar */}
-          <div className="flex items-center justify-between border-b border-border-subtle px-4 py-2 bg-surface text-[12px]">
+          <div className="flex items-center justify-between border-b border-hairline px-5 py-2 bg-canvas">
             <div className="flex items-center gap-3">
               <input
                 type="text"
                 value={docTitle}
                 onChange={(e) => setDocTitle(e.target.value)}
                 disabled={isLocked}
-                className="font-semibold text-[13px] text-text-primary bg-transparent focus:outline-none focus:ring-1 focus:ring-accent rounded px-1 -ml-1 w-64 sm:w-80 truncate"
+                className="text-body-sm-strong text-ink bg-transparent focus:outline-none focus:ring-1 focus:ring-link rounded-[6px] px-1.5 -ml-1 w-64 sm:w-80 truncate"
               />
-              <span className="text-text-muted">·</span>
-              <span className="text-[11px] font-mono px-1.5 py-0.5 rounded bg-surface-raised text-text-secondary border border-border-subtle">
+              <span className="text-hairline-strong">·</span>
+              <span className="text-caption-mono px-2 py-0.5 rounded-[6px] bg-canvas-soft-2 text-body border border-hairline">
                 v1.0 {isLocked ? "(Locked)" : "(Editable)"}
               </span>
 
-              {/* View toggle */}
-              <div className="hidden sm:flex items-center bg-surface-raised rounded p-0.5 border border-border-subtle text-[11px]">
+              {/* View toggle — Vercel tab-ghost pattern */}
+              <div className="hidden sm:flex items-center bg-canvas-soft-2 rounded-[6px] p-[2px] border border-hairline">
                 <button
                   onClick={() => setViewMode("editor")}
                   className={cn(
-                    "px-2.5 py-1 rounded font-medium transition-base",
+                    "px-3 py-[3px] rounded-[4px] text-body-sm-strong transition-base",
                     viewMode === "editor"
-                      ? "bg-surface shadow-xs text-text-primary font-semibold"
-                      : "text-text-secondary hover:text-text-primary"
+                      ? "bg-canvas shadow-sm text-ink"
+                      : "text-mute hover:text-body"
                   )}
                 >
                   Editor View
@@ -448,10 +453,10 @@ export default function Home() {
                 <button
                   onClick={() => setViewMode("diff")}
                   className={cn(
-                    "px-2.5 py-1 rounded font-medium transition-base",
+                    "px-3 py-[3px] rounded-[4px] text-body-sm-strong transition-base",
                     viewMode === "diff"
-                      ? "bg-surface shadow-xs text-text-primary font-semibold"
-                      : "text-text-secondary hover:text-text-primary"
+                      ? "bg-canvas shadow-sm text-ink"
+                      : "text-mute hover:text-body"
                   )}
                 >
                   Diff Comparison
@@ -460,19 +465,19 @@ export default function Home() {
             </div>
 
             {/* Right side drawer tab switch */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <button
                 onClick={() => setRightPanelTab("findings")}
                 className={cn(
-                  "px-2.5 py-1 text-[12px] font-medium rounded-md transition-base",
+                  "px-3 py-[5px] text-body-sm-strong rounded-[6px] transition-base",
                   rightPanelTab === "findings"
-                    ? "bg-surface-raised text-text-primary font-semibold border border-border-subtle"
-                    : "text-text-secondary hover:text-text-primary"
+                    ? "bg-canvas-soft-2 text-ink border border-hairline"
+                    : "text-mute hover:text-body"
                 )}
               >
                 Findings ({findings.length})
                 {unresolvedCount > 0 && (
-                  <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 font-bold">
+                  <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-error-soft text-error font-semibold font-mono">
                     {unresolvedCount}
                   </span>
                 )}
@@ -480,15 +485,15 @@ export default function Home() {
               <button
                 onClick={() => setRightPanelTab("review")}
                 className={cn(
-                  "px-2.5 py-1 text-[12px] font-medium rounded-md transition-base",
+                  "px-3 py-[5px] text-body-sm-strong rounded-[6px] transition-base",
                   rightPanelTab === "review"
-                    ? "bg-surface-raised text-text-primary font-semibold border border-border-subtle"
-                    : "text-text-secondary hover:text-text-primary"
+                    ? "bg-canvas-soft-2 text-ink border border-hairline"
+                    : "text-mute hover:text-body"
                 )}
               >
                 Workflow & Review
                 {comments.length > 0 && (
-                  <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-surface-raised text-text-secondary font-mono">
+                  <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-canvas-soft-2 text-body font-mono">
                     {comments.length}
                   </span>
                 )}
@@ -499,7 +504,7 @@ export default function Home() {
           {/* Split Screen Workbench */}
           <div className="flex flex-1 overflow-hidden">
             {/* Center Area: Editor or Diff View */}
-            <div className="flex-1 flex flex-col overflow-hidden bg-background">
+            <div className="flex-1 flex flex-col overflow-hidden bg-canvas-soft">
               {viewMode === "editor" ? (
                 <DraftWorkspace
                   content={content}
@@ -530,7 +535,7 @@ export default function Home() {
             </div>
 
             {/* Right Side Drawer */}
-            <div className="w-[380px] lg:w-[420px] xl:w-[460px] h-full flex flex-col shrink-0 border-l border-border-subtle bg-surface">
+            <div className="w-[380px] lg:w-[420px] xl:w-[460px] h-full flex flex-col shrink-0 border-l border-hairline bg-canvas">
               {rightPanelTab === "findings" ? (
                 <FindingsPanel
                   findings={findings}

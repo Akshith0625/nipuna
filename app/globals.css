@@ -1,53 +1,124 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* ── Surface tokens (Vercel's 4-step ladder) ── */
+  --color-canvas: var(--canvas);
+  --color-canvas-soft: var(--canvas-soft);
+  --color-canvas-soft-2: var(--canvas-soft-2);
   --color-surface: var(--surface);
-  --color-surface-raised: var(--surface-raised);
-  --color-border-subtle: var(--border-subtle);
-  --color-border-default: var(--border-default);
-  --color-text-primary: var(--text-primary);
-  --color-text-secondary: var(--text-secondary);
-  --color-text-muted: var(--text-muted);
+
+  /* ── Text tokens ── */
+  --color-ink: var(--ink);
+  --color-body: var(--body-text);
+  --color-mute: var(--mute);
+  --color-on-primary: var(--on-primary);
+
+  /* ── Border tokens ── */
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+
+  /* ── Accent / Semantic ── */
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
+  --color-link: var(--link);
+  --color-success: var(--success);
+  --color-error: var(--error);
+  --color-error-soft: var(--error-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
 
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  /* ── Brand gradient stops ── */
+  --color-gradient-develop-start: #007cf0;
+  --color-gradient-develop-end: #00dfd8;
+  --color-gradient-preview-start: #7928ca;
+  --color-gradient-preview-end: #ff0080;
+
+  /* ── Font families (Geist loaded via next/font in layout.tsx) ── */
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+
+  /* ── Radii (Vercel scale) ── */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 100px;
+  --radius-full: 9999px;
+
+  /* ── Shadows (Vercel stacked) ── */
+  --shadow-xs: 0 0 0 1px rgba(0,0,0,0.04);
+  --shadow-sm: 0 0 0 1px rgba(0,0,0,0.04), 0px 1px 1px rgba(0,0,0,0.02), 0px 2px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 0 0 1px rgba(0,0,0,0.04), 0px 2px 2px rgba(0,0,0,0.04), 0px 8px 8px -8px rgba(0,0,0,0.04);
+  --shadow-lg: 0 0 0 1px rgba(0,0,0,0.04), 0px 2px 2px rgba(0,0,0,0.04), 0px 8px 16px -4px rgba(0,0,0,0.04);
+  --shadow-xl: 0 0 0 1px rgba(0,0,0,0.04), 0px 1px 1px rgba(0,0,0,0.02), 0px 8px 16px -4px rgba(0,0,0,0.04), 0px 24px 32px -8px rgba(0,0,0,0.06);
 }
 
+/* ═══════════════════════════════════════════
+   Light theme (Vercel defaults)
+   ═══════════════════════════════════════════ */
 :root {
-  --background: #fafaf9;
-  --foreground: #1c1917;
+  --canvas: #ffffff;
+  --canvas-soft: #fafafa;
+  --canvas-soft-2: #f5f5f5;
   --surface: #ffffff;
-  --surface-raised: #f5f5f4;
-  --border-subtle: #e7e5e4;
-  --border-default: #d6d3d1;
-  --text-primary: #1c1917;
-  --text-secondary: #57534e;
-  --text-muted: #a8a29e;
-  --accent: #292524;
-  --accent-hover: #44403c;
+
+  --ink: #171717;
+  --body-text: #4d4d4d;
+  --mute: #888888;
+  --on-primary: #ffffff;
+
+  --hairline: #ebebeb;
+  --hairline-strong: #a1a1a1;
+
+  --accent: #171717;
+  --accent-hover: #333333;
+  --link: #0070f3;
+  --success: #0070f3;
+  --error: #ee0000;
+  --error-soft: #f7d4d6;
+  --warning: #f5a623;
+  --warning-soft: #ffefcf;
 }
 
+/* ═══════════════════════════════════════════
+   Dark theme (Vercel's polarity-flipped)
+   ═══════════════════════════════════════════ */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0c0a09;
-    --foreground: #e7e5e4;
-    --surface: #1c1917;
-    --surface-raised: #292524;
-    --border-subtle: #292524;
-    --border-default: #44403c;
-    --text-primary: #fafaf9;
-    --text-secondary: #a8a29e;
-    --text-muted: #78716c;
-    --accent: #fafaf9;
-    --accent-hover: #e7e5e4;
+    --canvas: #0a0a0a;
+    --canvas-soft: #111111;
+    --canvas-soft-2: #1a1a1a;
+    --surface: #0a0a0a;
+
+    --ink: #ededed;
+    --body-text: #a1a1a1;
+    --mute: #666666;
+    --on-primary: #0a0a0a;
+
+    --hairline: #2e2e2e;
+    --hairline-strong: #555555;
+
+    --accent: #ededed;
+    --accent-hover: #cccccc;
+    --link: #3291ff;
+    --success: #3291ff;
+    --error: #ff4444;
+    --error-soft: rgba(255,68,68,0.15);
+    --warning: #f5a623;
+    --warning-soft: rgba(245,166,35,0.15);
+
+    --shadow-xs: 0 0 0 1px rgba(255,255,255,0.06);
+    --shadow-sm: 0 0 0 1px rgba(255,255,255,0.06), 0px 1px 1px rgba(0,0,0,0.2);
+    --shadow-md: 0 0 0 1px rgba(255,255,255,0.06), 0px 2px 4px rgba(0,0,0,0.2);
+    --shadow-lg: 0 0 0 1px rgba(255,255,255,0.06), 0px 4px 16px rgba(0,0,0,0.3);
+    --shadow-xl: 0 0 0 1px rgba(255,255,255,0.06), 0px 8px 32px rgba(0,0,0,0.4);
   }
 }
 
+/* ═══════════════════════════════════════════
+   Base reset & typography
+   ═══════════════════════════════════════════ */
 * {
   box-sizing: border-box;
 }
@@ -59,28 +130,67 @@ html {
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--canvas-soft);
+  color: var(--ink);
   font-family: var(--font-sans);
   font-size: 14px;
+  font-weight: 400;
   line-height: 1.6;
+  letter-spacing: -0.28px;
   margin: 0;
 }
 
-/* Scrollbar — minimal and unobtrusive */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-
-/* Focus ring — accessible but subtle */
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: 2px;
+/* ── Selection — Vercel's inverted selection ── */
+::selection {
+  background: var(--ink);
+  color: var(--canvas);
 }
 
-/* Editor highlight classes */
+/* ═══════════════════════════════════════════
+   Typography utility classes
+   ═══════════════════════════════════════════ */
+.text-display-xl { font-size: 48px; font-weight: 600; line-height: 48px; letter-spacing: -2.4px; }
+.text-display-lg { font-size: 32px; font-weight: 600; line-height: 40px; letter-spacing: -1.28px; }
+.text-display-md { font-size: 24px; font-weight: 600; line-height: 32px; letter-spacing: -0.96px; }
+.text-display-sm { font-size: 20px; font-weight: 600; line-height: 28px; letter-spacing: -0.6px; }
+.text-body-lg    { font-size: 18px; font-weight: 400; line-height: 28px; letter-spacing: 0px; }
+.text-body-md    { font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: 0px; }
+.text-body-sm    { font-size: 14px; font-weight: 400; line-height: 20px; letter-spacing: -0.28px; }
+.text-body-sm-strong { font-size: 14px; font-weight: 500; line-height: 20px; letter-spacing: -0.28px; }
+.text-caption    { font-size: 12px; font-weight: 400; line-height: 16px; letter-spacing: 0px; }
+.text-caption-mono { font-size: 12px; font-weight: 400; line-height: 16px; letter-spacing: 0px; font-family: var(--font-mono); }
+.text-code       { font-size: 13px; font-weight: 400; line-height: 20px; font-family: var(--font-mono); }
+
+/* ═══════════════════════════════════════════
+   Scrollbar — razor thin, Vercel style
+   ═══════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--hairline-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--mute); }
+
+/* ═══════════════════════════════════════════
+   Focus ring — accessible, Vercel 2px ring
+   ═══════════════════════════════════════════ */
+:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════
+   Elevation utility classes
+   ═══════════════════════════════════════════ */
+.elevation-0 { box-shadow: none; }
+.elevation-1 { box-shadow: var(--shadow-xs); }
+.elevation-2 { box-shadow: var(--shadow-sm); }
+.elevation-3 { box-shadow: var(--shadow-md); }
+.elevation-4 { box-shadow: var(--shadow-lg); }
+.elevation-5 { box-shadow: var(--shadow-xl); }
+
+/* ═══════════════════════════════════════════
+   Editor highlight classes (finding overlays)
+   ═══════════════════════════════════════════ */
 .highlight-conflict {
   background: #fef2f2;
   border-bottom: 2px solid #e11d48;
@@ -92,8 +202,8 @@ body {
   cursor: pointer;
 }
 .highlight-rule-match {
-  background: #f5f5f4;
-  border-bottom: 2px solid #78716c;
+  background: var(--canvas-soft-2);
+  border-bottom: 2px solid var(--hairline-strong);
   cursor: pointer;
 }
 .highlight-supported {
@@ -115,7 +225,9 @@ body {
   .highlight-tone-heuristic { background: rgba(100, 116, 139, 0.12); }
 }
 
-/* Diff view */
+/* ═══════════════════════════════════════════
+   Diff view
+   ═══════════════════════════════════════════ */
 .diff-add { background: #dcfce7; color: #166534; }
 .diff-remove { background: #fee2e2; color: #991b1b; text-decoration: line-through; }
 @media (prefers-color-scheme: dark) {
@@ -123,7 +235,69 @@ body {
   .diff-remove { background: rgba(153, 27, 27, 0.2); color: #fca5a5; }
 }
 
-/* Transition utility */
+/* ═══════════════════════════════════════════
+   Transition utilities
+   ═══════════════════════════════════════════ */
 .transition-base {
   transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ═══════════════════════════════════════════
+   Brand gradient (used sparingly for accent)
+   ═══════════════════════════════════════════ */
+.brand-gradient-text {
+  background: linear-gradient(135deg, #007cf0, #00dfd8, #7928ca, #ff0080);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 300% 300%;
+  animation: gradient-shift 6s ease-in-out infinite;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ═══════════════════════════════════════════
+   Pill button utility
+   ═══════════════════════════════════════════ */
+.btn-pill {
+  border-radius: 100px;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  padding: 0 12px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-pill-primary {
+  background: var(--ink);
+  color: var(--on-primary);
+}
+.btn-pill-primary:hover {
+  background: var(--accent-hover);
+}
+.btn-pill-secondary {
+  background: var(--canvas);
+  color: var(--ink);
+  box-shadow: var(--shadow-xs);
+}
+.btn-pill-secondary:hover {
+  background: var(--canvas-soft-2);
+}
+
+/* ═══════════════════════════════════════════
+   Card utility
+   ═══════════════════════════════════════════ */
+.card-geist {
+  background: var(--canvas);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--hairline);
 }

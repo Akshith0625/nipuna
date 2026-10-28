@@ -61,7 +61,7 @@ function buildHighlightedHtml(
     // Highlighted span
     const cls = EVIDENCE_HIGHLIGHT_CLASS[finding.evidenceStatus] || "highlight-rule-match";
     const isActive = finding.id === activeFindingId;
-    result += `<mark class="${cls}${isActive ? " ring-2 ring-accent ring-offset-1" : ""}" data-finding-id="${finding.id}">${escapeHtml(text.slice(start, end))}</mark>`;
+    result += `<mark class="${cls}${isActive ? " ring-2 ring-link ring-offset-1" : ""}" data-finding-id="${finding.id}">${escapeHtml(text.slice(start, end))}</mark>`;
 
     lastIndex = end;
   }
@@ -136,7 +136,7 @@ export default function DraftWorkspace({
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
-      <div className="flex items-center justify-between border-b border-border-subtle px-4 py-2 bg-surface">
+      <div className="flex items-center justify-between border-b border-hairline px-5 py-2 bg-canvas">
         <div className="flex items-center gap-2">
           <select
             onChange={(e) => {
@@ -145,7 +145,7 @@ export default function DraftWorkspace({
             }}
             defaultValue=""
             disabled={isLocked}
-            className="text-[12px] font-medium bg-surface-raised border border-border-subtle rounded-md px-2 py-1 text-text-secondary"
+            className="text-caption font-medium bg-canvas-soft-2 border border-hairline rounded-[6px] px-2 py-1.5 text-body"
           >
             <option value="" disabled>Load test draft…</option>
             {draftOptions.map((d, i) => (
@@ -163,19 +163,19 @@ export default function DraftWorkspace({
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isLocked}
-            className="text-[12px] font-medium px-2.5 py-1 rounded-md border border-border-subtle text-text-secondary hover:bg-surface-raised transition-base disabled:opacity-40"
+            className="text-caption font-medium px-3 py-1.5 rounded-[6px] border border-hairline text-body hover:bg-canvas-soft-2 transition-base disabled:opacity-40"
           >
             Upload .docx
           </button>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="text-[11px] text-text-muted tabular-nums">
+        <div className="flex items-center gap-4">
+          <span className="text-caption-mono text-mute tabular-nums">
             {wordCount} words
           </span>
 
           {scanDurationMs !== undefined && (
-            <span className="text-[11px] text-text-muted tabular-nums">
+            <span className="text-caption-mono text-mute tabular-nums">
               {scanDurationMs}ms
             </span>
           )}
@@ -184,20 +184,26 @@ export default function DraftWorkspace({
             onClick={onRunCheck}
             disabled={isScanning || !content.trim() || isLocked}
             className={cn(
-              "text-[12px] font-semibold px-3.5 py-1.5 rounded-md transition-base",
-              "bg-accent text-white dark:text-background hover:bg-accent-hover",
+              "btn-pill btn-pill-primary",
               "disabled:opacity-40 disabled:cursor-not-allowed"
             )}
           >
-            {isScanning ? "Scanning…" : "Run Governance Review"}
+            {isScanning ? (
+              <>
+                <span className="h-3.5 w-3.5 rounded-full border-2 border-on-primary border-t-transparent animate-spin" />
+                Scanning…
+              </>
+            ) : (
+              "Run Governance Review"
+            )}
           </button>
         </div>
       </div>
 
       {/* Locked banner */}
       {isLocked && (
-        <div className="px-4 py-2 bg-green-50 dark:bg-green-950/30 border-b border-green-200 dark:border-green-900">
-          <p className="text-[12px] text-green-800 dark:text-green-300 font-medium">
+        <div className="px-5 py-2.5 bg-[#f0fdf4] dark:bg-[rgba(5,150,105,0.08)] border-b border-[#bbf7d0] dark:border-[rgba(5,150,105,0.2)]">
+          <p className="text-caption font-medium text-[#166534] dark:text-[#86efac]">
             ✓ This version has been approved and locked. Create a new version to make further changes.
           </p>
         </div>
@@ -208,7 +214,7 @@ export default function DraftWorkspace({
         {hasFindings ? (
           // Highlighted read view
           <div
-            className="p-6 font-sans text-[14px] leading-7 text-text-primary cursor-text min-h-full whitespace-pre-wrap"
+            className="p-8 text-body-sm leading-7 text-ink cursor-text min-h-full whitespace-pre-wrap max-w-[720px] mx-auto"
             onClick={handleHighlightClick}
             dangerouslySetInnerHTML={{
               __html: buildHighlightedHtml(content, findings, activeFindingId),
@@ -221,7 +227,7 @@ export default function DraftWorkspace({
             onChange={(e) => onContentChange(e.target.value)}
             disabled={isLocked}
             placeholder="Paste your draft here, upload a .docx file, or select a test draft from the toolbar above…"
-            className="w-full h-full p-6 bg-transparent resize-none font-sans text-[14px] leading-7 text-text-primary placeholder:text-text-muted focus:outline-none disabled:opacity-60"
+            className="w-full h-full p-8 bg-transparent resize-none text-body-sm leading-7 text-ink placeholder:text-mute focus:outline-none disabled:opacity-60 max-w-[720px] mx-auto block"
           />
         )}
       </div>

@@ -30,29 +30,29 @@ export default function Navbar({
   onRoleChange,
 }: NavbarProps) {
   return (
-    <header className="sticky top-0 z-50 flex h-12 items-center justify-between border-b border-border-subtle bg-surface px-4">
+    <header className="sticky top-0 z-50 flex h-[52px] items-center justify-between border-b border-hairline bg-canvas px-5">
       {/* Left — Logo and brand */}
       <div className="flex items-center gap-3">
-        <span className="text-[15px] font-semibold tracking-tight text-text-primary">
+        <span className="text-[15px] font-semibold tracking-[-0.6px] text-ink">
           nipuna
         </span>
-        <span className="text-text-muted">·</span>
-        <span className="text-[13px] font-medium text-text-secondary">
+        <span className="text-hairline-strong">|</span>
+        <span className="text-caption-mono text-body uppercase tracking-wide">
           {brandName}
         </span>
       </div>
 
-      {/* Center — Tabs */}
-      <nav className="flex items-center gap-0.5">
+      {/* Center — Tabs (pill-style, Vercel tab-ghost pattern) */}
+      <nav className="flex items-center gap-1 bg-canvas-soft-2 rounded-[64px] p-[3px]">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
             className={cn(
-              "px-3 py-1.5 text-[13px] font-medium rounded-md transition-base",
+              "px-4 py-[5px] text-body-sm-strong rounded-[64px] transition-base",
               activeTab === tab.id
-                ? "bg-accent text-white dark:text-background"
-                : "text-text-secondary hover:text-text-primary hover:bg-surface-raised"
+                ? "bg-canvas text-ink shadow-sm"
+                : "text-mute hover:text-body"
             )}
           >
             {tab.label}
@@ -61,20 +61,20 @@ export default function Navbar({
       </nav>
 
       {/* Right — Role switcher */}
-      <div className="flex items-center gap-2">
-        <span className="text-[11px] uppercase tracking-wider text-text-muted font-medium">
+      <div className="flex items-center gap-3">
+        <span className="text-caption-mono text-mute uppercase tracking-wider">
           Demo Mode
         </span>
-        <div className="flex items-center border border-border-subtle rounded-md overflow-hidden">
+        <div className="flex items-center rounded-[6px] border border-hairline overflow-hidden">
           {ROLES.map((r) => (
             <button
               key={r.id}
               onClick={() => onRoleChange(r.id)}
               className={cn(
-                "px-2.5 py-1 text-[12px] font-medium transition-base",
+                "px-2.5 py-[5px] text-body-sm-strong transition-base",
                 role === r.id
-                  ? "bg-accent text-white dark:text-background"
-                  : "text-text-secondary hover:text-text-primary hover:bg-surface-raised"
+                  ? "bg-accent text-on-primary"
+                  : "text-body hover:text-ink hover:bg-canvas-soft-2"
               )}
             >
               {r.label}

@@ -17,10 +17,10 @@ interface ReviewPanelProps {
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  draft: { label: "Draft", color: "text-text-muted" },
-  in_review: { label: "In Review", color: "text-amber-600 dark:text-amber-400" },
-  changes_requested: { label: "Changes Requested", color: "text-rose-600 dark:text-rose-400" },
-  approved: { label: "Approved", color: "text-emerald-600 dark:text-emerald-400" },
+  draft: { label: "Draft", color: "text-mute" },
+  in_review: { label: "In Review", color: "text-[#f5a623]" },
+  changes_requested: { label: "Changes Requested", color: "text-[#ee0000] dark:text-[#ff6666]" },
+  approved: { label: "Approved", color: "text-[#0070f3] dark:text-[#3291ff]" },
 };
 
 export default function ReviewPanel({
@@ -50,35 +50,35 @@ export default function ReviewPanel({
   }
 
   return (
-    <div className="flex flex-col h-full border-l border-border-subtle bg-surface">
+    <div className="flex flex-col h-full bg-canvas">
       {/* Status header */}
-      <div className="border-b border-border-subtle px-4 py-3">
+      <div className="border-b border-hairline px-5 py-3">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[13px] font-semibold text-text-primary">Review</h2>
-          <span className={cn("text-[12px] font-semibold", statusInfo.color)}>
+          <h2 className="text-body-sm-strong text-ink">Review Workflow</h2>
+          <span className={cn("text-caption-mono font-medium uppercase", statusInfo.color)}>
             {statusInfo.label}
           </span>
         </div>
 
         {/* Resolution summary */}
         <div className="grid grid-cols-3 gap-2 mb-3">
-          <div className="text-center py-2 bg-surface-raised rounded border border-border-subtle">
-            <div className="text-[16px] font-semibold text-rose-600 dark:text-rose-400 tabular-nums">
+          <div className="text-center py-2 bg-canvas-soft-2 rounded-[6px] border border-hairline">
+            <div className="text-[16px] font-semibold text-[#ee0000] dark:text-[#ff6666] tabular-nums font-mono">
               {pendingCount}
             </div>
-            <div className="text-[10px] text-text-muted uppercase font-medium">Open</div>
+            <div className="text-[10px] text-mute uppercase font-mono">Open</div>
           </div>
-          <div className="text-center py-2 bg-surface-raised rounded border border-border-subtle">
-            <div className="text-[16px] font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
+          <div className="text-center py-2 bg-canvas-soft-2 rounded-[6px] border border-hairline">
+            <div className="text-[16px] font-semibold text-[#0070f3] dark:text-[#3291ff] tabular-nums font-mono">
               {acceptedCount}
             </div>
-            <div className="text-[10px] text-text-muted uppercase font-medium">Fixed</div>
+            <div className="text-[10px] text-mute uppercase font-mono">Fixed</div>
           </div>
-          <div className="text-center py-2 bg-surface-raised rounded border border-border-subtle">
-            <div className="text-[16px] font-semibold text-stone-500 tabular-nums">
+          <div className="text-center py-2 bg-canvas-soft-2 rounded-[6px] border border-hairline">
+            <div className="text-[16px] font-semibold text-mute tabular-nums font-mono">
               {dismissedCount}
             </div>
-            <div className="text-[10px] text-text-muted uppercase font-medium">Dismissed</div>
+            <div className="text-[10px] text-mute uppercase font-mono">Dismissed</div>
           </div>
         </div>
 
@@ -87,7 +87,7 @@ export default function ReviewPanel({
           <button
             onClick={onSubmitForReview}
             disabled={findings.length === 0}
-            className="w-full text-[12px] font-semibold px-3 py-2 rounded-md bg-accent text-white dark:text-background hover:bg-accent-hover transition-base disabled:opacity-40"
+            className="w-full btn-pill btn-pill-primary disabled:opacity-40"
           >
             Submit for Review
           </button>
@@ -100,7 +100,7 @@ export default function ReviewPanel({
               onChange={(e) => setReviewNotes(e.target.value)}
               placeholder="Reviewer notes (optional)…"
               rows={2}
-              className="w-full text-[12px] px-2.5 py-2 bg-surface-raised border border-border-subtle rounded-md resize-none text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+              className="w-full text-caption px-3 py-2 bg-canvas-soft-2 border border-hairline rounded-[6px] resize-none text-ink placeholder:text-mute focus:outline-none focus:ring-1 focus:ring-link"
             />
             <div className="flex items-center gap-2">
               <button
@@ -108,20 +108,20 @@ export default function ReviewPanel({
                   onRequestChanges(reviewNotes);
                   setReviewNotes("");
                 }}
-                className="flex-1 text-[12px] font-semibold px-3 py-2 rounded-md border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-base"
+                className="flex-1 text-caption font-semibold px-3 py-2 rounded-[100px] border border-hairline text-[#ee0000] dark:text-[#ff6666] hover:bg-canvas-soft-2 transition-base"
               >
                 Request Changes
               </button>
               <button
                 onClick={onApproveVersion}
                 disabled={pendingCount > 0}
-                className="flex-1 text-[12px] font-semibold px-3 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-base disabled:opacity-40"
+                className="flex-1 text-caption font-semibold px-3 py-2 rounded-[100px] bg-accent text-on-primary hover:bg-accent-hover transition-base disabled:opacity-40"
               >
                 Approve
               </button>
             </div>
             {pendingCount > 0 && (
-              <p className="text-[11px] text-text-muted">
+              <p className="text-[11px] text-mute">
                 {pendingCount} finding{pendingCount > 1 ? "s" : ""} still unresolved. Resolve all before approving.
               </p>
             )}
@@ -129,8 +129,8 @@ export default function ReviewPanel({
         )}
 
         {reviewStatus === "approved" && (
-          <div className="px-3 py-2 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 rounded-md">
-            <p className="text-[12px] text-emerald-800 dark:text-emerald-300 font-medium">
+          <div className="px-3 py-2 bg-[#f0fdf4] dark:bg-[rgba(5,150,105,0.08)] border border-[#bbf7d0] dark:border-[rgba(5,150,105,0.2)] rounded-[6px]">
+            <p className="text-caption font-medium text-[#166534] dark:text-[#86efac]">
               ✓ Version approved and locked.
             </p>
           </div>
@@ -139,20 +139,20 @@ export default function ReviewPanel({
 
       {/* Comments section */}
       <div className="flex-1 overflow-y-auto">
-        <div className="px-4 py-3 border-b border-border-subtle">
-          <h3 className="text-[12px] font-semibold text-text-primary mb-2">Comments</h3>
+        <div className="px-5 py-3 border-b border-hairline">
+          <h3 className="text-caption font-semibold text-ink mb-2">Collaboration Notes</h3>
           <div className="flex items-start gap-2">
             <textarea
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               placeholder={`Add a comment as ${role}…`}
               rows={2}
-              className="flex-1 text-[12px] px-2.5 py-2 bg-surface-raised border border-border-subtle rounded-md resize-none text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+              className="flex-1 text-caption px-3 py-2 bg-canvas-soft-2 border border-hairline rounded-[6px] resize-none text-ink placeholder:text-mute focus:outline-none focus:ring-1 focus:ring-link"
             />
             <button
               onClick={handleAddComment}
               disabled={!commentText.trim()}
-              className="text-[11px] font-semibold px-2.5 py-2 rounded-md bg-accent text-white dark:text-background hover:bg-accent-hover transition-base disabled:opacity-40"
+              className="btn-pill btn-pill-primary text-caption !h-auto py-2 px-3 disabled:opacity-40"
             >
               Send
             </button>
@@ -160,10 +160,10 @@ export default function ReviewPanel({
         </div>
 
         {/* Comment list */}
-        <div className="divide-y divide-border-subtle">
+        <div className="divide-y divide-hairline">
           {comments.length === 0 && events.length === 0 && (
-            <div className="px-4 py-8 text-center text-[12px] text-text-muted">
-              No activity yet
+            <div className="px-5 py-8 text-center text-caption text-mute">
+              No activity recorded yet
             </div>
           )}
 
@@ -177,30 +177,30 @@ export default function ReviewPanel({
               if (item.type === "comment") {
                 const c = item.data as ReviewComment;
                 return (
-                  <div key={`c-${i}`} className="px-4 py-2.5">
+                  <div key={`c-${i}`} className="px-5 py-3">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <span className="text-[11px] font-semibold text-text-primary capitalize">
+                      <span className="text-caption font-semibold text-ink capitalize">
                         {c.actor}
                       </span>
-                      <span className="text-[10px] text-text-muted font-medium uppercase">
+                      <span className="text-[10px] text-mute uppercase font-mono px-1.5 py-0.2 rounded bg-canvas-soft-2 border border-hairline">
                         {c.role}
                       </span>
-                      <span className="text-[10px] text-text-muted ml-auto">
+                      <span className="text-caption-mono text-mute ml-auto">
                         {formatTime(c.createdAt)}
                       </span>
                     </div>
-                    <p className="text-[12px] text-text-secondary leading-5">{c.text}</p>
+                    <p className="text-caption text-body leading-5">{c.text}</p>
                   </div>
                 );
               } else {
                 const e = item.data as ReviewEvent;
                 return (
-                  <div key={`e-${i}`} className="px-4 py-2 bg-surface-raised/50">
-                    <p className="text-[11px] text-text-muted">
-                      <span className="font-medium text-text-secondary">{e.actor}</span>
+                  <div key={`e-${i}`} className="px-5 py-2 bg-canvas-soft-2">
+                    <p className="text-caption text-mute">
+                      <span className="font-medium text-body">{e.actor}</span>
                       {" "}{e.action}
                       {e.comment && <span className="italic"> — &ldquo;{e.comment}&rdquo;</span>}
-                      <span className="ml-1.5 text-[10px]">{formatTime(e.timestamp)}</span>
+                      <span className="ml-2 text-caption-mono text-mute">{formatTime(e.timestamp)}</span>
                     </p>
                   </div>
                 );
